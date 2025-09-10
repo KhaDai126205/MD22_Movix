@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Food</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #fffbe6 0%, #ffe5ec 100%);
+            min-height: 100vh;
+        }
+        h1 {
+            color: #ff7043;
+            font-family: 'Pacifico', cursive;
+            text-align: center;
+            margin-top: 32px;
+            letter-spacing: 2px;
+            font-size: 2.5rem;
+            text-shadow: 1px 2px 0 #fff3e0;
+        }
+        form {
+            margin: 32px auto 24px auto;
+            background: #fff;
+            padding: 28px 32px 20px 32px;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(255,112,67,0.08);
+            max-width: 600px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px 24px;
+            align-items: flex-end;
+        }
+        form label {
+            flex: 1 1 220px;
+            display: flex;
+            flex-direction: column;
+            font-weight: 600;
+            color: #ff7043;
+            font-size: 1rem;
+        }
+        form input[type="text"],
+        form input[type="number"],
+        form select,
+        form textarea {
+            border: 1.5px solid #ffd6c1;
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 1rem;
+            margin-top: 4px;
+            background: #fff8f3;
+            transition: border 0.2s;
+        }
+        form input[type="text"]:focus,
+        form input[type="number"]:focus,
+        form select:focus,
+        form textarea:focus {
+            border: 1.5px solid #ff7043;
+            outline: none;
+        }
+        form button {
+            background: linear-gradient(90deg, #ff7043 60%, #ffa726 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            box-shadow: 0 2px 8px rgba(255,112,67,0.08);
+            transition: background 0.2s, transform 0.1s;
+        }
+        form button:hover {
+            background: linear-gradient(90deg, #ffa726 60%, #ff7043 100%);
+            transform: translateY(-2px) scale(1.04);
+        }
+        .preview-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid #ffd6c1;
+            margin-top: 8px;
+            display: block;
+            background: #fff8f3;
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 98%;
+            margin: 0 auto 40px auto;
+            background: #fff;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(255,112,67,0.08);
+        }
+        th, td {
+            padding: 12px 10px;
+            text-align: center;
+        }
+        th {
+            background: #ff7043;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-bottom: 3px solid #ffd6c1;
+        }
+        td {
+            background: #fff8f3;
+            color: #333;
+            font-size: 1rem;
+            vertical-align: middle;
+        }
+        tr:nth-child(even) td {
+            background: #fff3e0;
+        }
+        td img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #ffd6c1;
+            background: #fff;
+        }
+        .actions button {
+            background: #ffa726;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 16px;
+            margin: 0 2px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .actions button:hover {
+            background: #ff7043;
+            transform: scale(1.07);
+        }
+        .food-icon {
+            font-size: 2.2rem;
+            color: #ffa726;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @media (max-width: 700px) {
+            form, table { max-width: 98vw; }
+            form { padding: 12px 6px; }
+            th, td { font-size: 0.95rem; padding: 7px 3px; }
+        }
+    </style>
+</head>
+<body>
+    <h1><i class="fas fa-hamburger food-icon"></i>Quản lý Đồ Ăn</h1>
+    
+    <!-- Thêm phần tóm tắt thống kê -->
+    <div class="stats-container" style="max-width:800px;margin:24px auto;display:flex;gap:16px;flex-wrap:wrap;">
+        <div class="stat-card" style="flex:1;min-width:180px;background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(255,112,67,0.1);text-align:center;">
+            <div style="font-size:2rem;color:#ff7043;margin-bottom:8px;">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div style="font-size:1.8rem;font-weight:bold;color:#ff7043;" id="totalOrdersToday">0</div>
+            <div style="color:#666;font-size:0.9rem;">Đơn hôm nay</div>
+        </div>
+        
+        <div class="stat-card" style="flex:1;min-width:180px;background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(255,112,67,0.1);text-align:center;">
+            <div style="font-size:2rem;color:#ffa726;margin-bottom:8px;">
+                <i class="fas fa-star"></i>
+            </div>
+            <div style="font-size:1.8rem;font-weight:bold;color:#ffa726;" id="popularFood">-</div>
+            <div style="color:#666;font-size:0.9rem;">Món phổ biến nhất</div>
+        </div>
+        
+        <div class="stat-card" style="flex:1;min-width:180px;background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(255,112,67,0.1);text-align:center;">
+            <div style="font-size:2rem;color:#43a047;margin-bottom:8px;">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div style="font-size:1.8rem;font-weight:bold;color:#43a047;" id="totalRevenue">0₫</div>
+            <div style="color:#666;font-size:0.9rem;">Doanh thu hôm nay</div>
+        </div>
+    </div>
+
+    <form id="foodForm">
+        <input type="hidden" id="foodId">
+        <label>Tên món:
+            <input type="text" id="name" required placeholder="Tên món ăn...">
+        </label>
+        <label>Giá:
+            <input type="number" id="price" required placeholder="Giá (VNĐ)">
+        </label>
+        <label>Thể loại:
+            <input type="text" id="category" required placeholder="Ví dụ: Đồ uống, Ăn vặt...">
+        </label>
+        <label>Trạng thái: 
+            <select id="status">
+                <option value="true">Còn bán</option>
+                <option value="false">Hết hàng</option>
+            </select>
+        </label>
+        <label>Mô tả:
+            <textarea id="desc" rows="1" placeholder="Mô tả ngắn..."></textarea>
+        </label>
+        <label>Ảnh:
+            <input type="file" id="image" accept="image/*">
+            <img class="preview-img" id="previewImg" style="display:none;">
+        </label>
+        <button type="submit"><i class="fas fa-save"></i> Lưu</button>
+        <button type="button" onclick="resetForm()"><i class="fas fa-times"></i> Hủy</button>
+    </form>
+    <table>
+        <thead>
+            <tr>
+                <th>Ảnh</th>
+                <th>Tên</th>
+                <th>Giá</th>
+                <th>Thể loại</th>
+                <th>Trạng thái</th>
+                <th>Mô tả</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody id="foodTable"></tbody>
+    </table>
+
+    <!-- Bảng đơn đặt hàng đồ ăn -->
+    <h2 style="color:#ff7043;text-align:center;margin-top:40px;">Đơn đặt hàng đồ ăn</h2>
+
+    <!-- Thêm ngay trên bảng đơn đặt hàng -->
+    <div style="text-align:center;margin:24px 0 8px 0;">
+        <label for="orderFilter" style="color:#ff7043;font-weight:bold;">Xem đơn: </label>
+        <select id="orderFilter" style="padding:6px 14px;border-radius:8px;border:1.5px solid #ffd6c1;">
+            <option value="all">Tất cả</option>
+            <option value="today">Hôm nay</option>
+            <option value="future">Sắp diễn ra</option>
+            <option value="past">Đã xong</option>
+        </select>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Ảnh món</th>
+                <th>Tên món</th>
+                <th>Người đặt</th>
+                <th>Ngày đặt</th>
+                <th>Giờ chiếu</th>
+            </tr>
+        </thead>
+        <tbody id="orderTable"></tbody>
+    </table>
+
+    <script>
+const api = "https://688253a466a7eb81224e3f86.mockapi.io/doan/food";
+const customerApi = "https://67ac56315853dfff53da3fd1.mockapi.io/Khach_Hang";
+const foodTable = document.getElementById('foodTable');
+const foodForm = document.getElementById('foodForm');
+const imageInput = document.getElementById('image');
+const previewImg = document.getElementById('previewImg');
+let foods = [];
+let customers = [];
+let imageUrl = "";
+const IMGBB_API_KEY = 'd698d3c569cf045e45516a8fc568c999';
+
+// Xem trước ảnh khi chọn file
+imageInput.addEventListener('change', async () => {
+    const file = imageInput.files[0];
+    if (!file) return;
+    previewImg.style.display = "block";
+    previewImg.src = URL.createObjectURL(file);
+
+    // Upload lên imgbb
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+        const base64Image = reader.result.split(',')[1];
+        const formData = new FormData();
+        formData.append('key', IMGBB_API_KEY);
+        formData.append('image', base64Image);
+
+        try {
+            const res = await fetch('https://api.imgbb.com/1/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                imageUrl = data.data.display_url || data.data.url;
+                previewImg.src = imageUrl;
+            } else {
+                alert("Upload ảnh thất bại!");
+                imageUrl = "";
+            }
+        } catch (err) {
+            alert("Lỗi mạng khi upload ảnh!");
+            imageUrl = "";
+        }
+    };
+    reader.readAsDataURL(file);
+});
+
+function renderTable() {
+    foodTable.innerHTML = foods.map(f => `
+        <tr>
+            <td><img src="${f.image}" alt="food"></td>
+            <td>${f.name}</td>
+            <td>${f.price.toLocaleString()} <span style="color:#ffa726;font-size:1.1em;">₫</span></td>
+            <td>${f.category}</td>
+            <td>
+                ${f.status ? '<span style="color:#43a047;font-weight:600;"><i class="fas fa-check-circle"></i> Còn bán</span>' : '<span style="color:#e53935;font-weight:600;"><i class="fas fa-times-circle"></i> Hết hàng</span>'}
+            </td>
+            <td>${f.desc}</td>
+            <td class="actions">
+                <button onclick="editFood('${f.id}')"><i class="fas fa-edit"></i> Sửa</button>
+                <button onclick="deleteFood('${f.id}')"><i class="fas fa-trash"></i> Xóa</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Lấy danh sách khách hàng
+async function fetchCustomers() {
+    const res = await fetch(customerApi);
+    customers = await res.json();
+}
+
+// Lấy tên khách hàng từ id
+function getCustomerNameById(id) {
+    // Tìm theo khach_hang_id thay vì id
+    const customer = customers.find(c => c.khach_hang_id == id || c.id == id);
+    return customer ? customer.ho_ten : "Ẩn danh";
+}
+
+// Hiển thị bảng đơn đặt hàng
+function renderOrderTable() {
+    const orderTable = document.getElementById('orderTable');
+    const filter = document.getElementById('orderFilter') ? document.getElementById('orderFilter').value : "all";
+    let rows = [];
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    foods.forEach(f => {
+        if (Array.isArray(f.khach_hang_id) && f.khach_hang_id.length > 0) {
+            f.khach_hang_id.forEach(order => {
+                let ngayDat = order.ngay_dat || "";
+                let [d, m, y] = ngayDat.split("/");
+                let orderDate = new Date(`${y}-${m}-${d}`);
+                orderDate.setHours(0,0,0,0);
+
+                let type = "";
+                if (orderDate.getTime() === today.getTime()) type = "today";
+                else if (orderDate < today) type = "past";
+                else type = "future";
+
+                if (filter === "all" || filter === type) {
+                    rows.push(`
+                        <tr>
+                            <td><img src="${f.image}" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:8px;"></td>
+                            <td>${f.name}</td>
+                            <td>${getCustomerNameById(order.id)}</td>
+                            <td>${order.ngay_dat || ""}</td>
+                            <td>${order.gio_chieu || ""}h</td>
+                        </tr>
+                    `);
+                }
+            });
+        }
+    });
+    orderTable.innerHTML = rows.length ? rows.join('') : `<tr><td colspan="5" style="color:#bbb;">Không có đơn phù hợp</td></tr>`;
+}
+
+// Sửa lại fetchFoods để lấy cả khách hàng và render bảng đơn hàng
+async function fetchFoods() {
+    await fetchCustomers();
+    const res = await fetch(api);
+    foods = await res.json();
+    renderTable();
+    renderOrderTable();
+    calculateTodayStats(); // Thêm dòng này
+    
+    // Gắn sự kiện filter (chỉ gắn 1 lần)
+    const filter = document.getElementById('orderFilter');
+    if (filter && !filter.hasListener) {
+        filter.addEventListener('change', renderOrderTable);
+        filter.hasListener = true;
+    }
+}
+
+foodForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('foodId').value;
+    const name = document.getElementById('name').value;
+    const price = document.getElementById('price').value;
+    const category = document.getElementById('category').value;
+    const status = document.getElementById('status').value === "true";
+    const desc = document.getElementById('desc').value;
+
+    // Nếu đang sửa mà không chọn ảnh mới, giữ ảnh cũ
+    let finalImage = imageUrl;
+    if (!finalImage && id) {
+        finalImage = foods.find(f => f.id === id)?.image || "";
+    }
+    if (!finalImage) {
+        alert("Vui lòng chọn và upload ảnh!");
+        return;
+    }
+
+    const foodData = { name, price, category, status, desc, image: finalImage };
+
+    if (id) {
+        await fetch(`${api}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(foodData)
+        });
+    } else {
+        await fetch(api, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(foodData)
+        });
+    }
+    resetForm();
+    fetchFoods();
+};
+
+window.editFood = function(id) {
+    const f = foods.find(x => x.id === id);
+    document.getElementById('foodId').value = f.id;
+    document.getElementById('name').value = f.name;
+    document.getElementById('price').value = f.price ? Number(f.price) : "";
+    document.getElementById('category').value = f.category;
+    document.getElementById('status').value = f.status;
+    document.getElementById('desc').value = f.desc;
+    imageInput.value = "";
+    previewImg.style.display = "block";
+    previewImg.src = f.image;
+    imageUrl = f.image;
+};
+
+window.deleteFood = async function(id) {
+    if (confirm("Xóa món này?")) {
+        await fetch(`${api}/${id}`, { method: "DELETE" });
+        fetchFoods();
+    }
+};
+
+function resetForm() {
+    foodForm.reset();
+    document.getElementById('foodId').value = "";
+    previewImg.style.display = "none";
+    previewImg.src = "";
+    imageUrl = "";
+}
+
+// Thêm hàm tính toán thống kê
+function calculateTodayStats() {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    let totalOrders = 0;
+    let totalRevenue = 0;
+    const foodCounts = {};
+    
+    foods.forEach(f => {
+        if (Array.isArray(f.khach_hang_id) && f.khach_hang_id.length > 0) {
+            f.khach_hang_id.forEach(order => {
+                let ngayDat = order.ngay_dat || "";
+                let [d, m, y] = ngayDat.split("/");
+                let orderDate = new Date(`${y}-${m}-${d}`);
+                orderDate.setHours(0,0,0,0);
+                
+                // Chỉ tính đơn hôm nay
+                if (orderDate.getTime() === today.getTime()) {
+                    totalOrders++;
+                    totalRevenue += parseInt(f.price) || 0;
+                    
+                    // Đếm số lần đặt mỗi món
+                    if (foodCounts[f.name]) {
+                        foodCounts[f.name]++;
+                    } else {
+                        foodCounts[f.name] = 1;
+                    }
+                }
+            });
+        }
+    });
+    
+    // Tìm món phổ biến nhất
+    let popularFood = "-";
+    let maxCount = 0;
+    for (const [foodName, count] of Object.entries(foodCounts)) {
+        if (count > maxCount) {
+            maxCount = count;
+            popularFood = foodName;
+        }
+    }
+    
+    // Cập nhật UI
+    document.getElementById('totalOrdersToday').textContent = totalOrders;
+    document.getElementById('popularFood').textContent = popularFood;
+    document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString() + '₫';
+}
+
+fetchFoods();
+document.getElementById('orderFilter').addEventListener('change', renderOrderTable);
+</script>
+</body>
+</html>

@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý khách hàng & nhân viên</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            /* Cinema-themed purple gradient background with film strip pattern */
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%),
+                linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533483 75%, #7209b7 100%);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Cinema spotlight effects */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 75% 75%, rgba(138, 43, 226, 0.15) 0%, transparent 30%);
+            animation: cinemaLights 8s ease-in-out infinite alternate;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Film strip decoration */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    #2d1b69 0px,
+                    #2d1b69 15px,
+                    #1a1a2e 15px,
+                    #1a1a2e 25px
+                );
+            z-index: 1;
+            opacity: 0.7;
+        }
+
+        @keyframes cinemaLights {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(2deg) scale(1.1); }
+            100% { transform: rotate(-1deg) scale(0.9); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            /* Added cinema-style text shadow and glow */
+            margin-top: 30px;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 
+                0 0 10px rgba(138, 43, 226, 0.5),
+                0 0 20px rgba(138, 43, 226, 0.3),
+                0 2px 4px rgba(0,0,0,0.3);
+            /* Cinema marquee glow animation */
+            animation: marqueeGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes marqueeGlow {
+            0% { text-shadow: 0 0 10px rgba(138, 43, 226, 0.5), 0 0 20px rgba(138, 43, 226, 0.3), 0 2px 4px rgba(0,0,0,0.3); }
+            100% { text-shadow: 0 0 15px rgba(138, 43, 226, 0.8), 0 0 30px rgba(138, 43, 226, 0.5), 0 2px 4px rgba(0,0,0,0.3); }
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+            font-weight: 300;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            /* Cinema-themed glass effect with purple tint */
+            background: rgba(138, 43, 226, 0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 16px;
+            padding: 20px 30px;
+            text-align: center;
+            color: white;
+            min-width: 150px;
+            box-shadow: 
+                0 8px 32px rgba(138, 43, 226, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(138, 43, 226, 0.25);
+            box-shadow: 
+                0 12px 40px rgba(138, 43, 226, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            /* Purple glow for numbers */
+            text-shadow: 0 0 10px rgba(138, 43, 226, 0.6);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .user-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .user-card {
+            /* Enhanced glass effect with cinema lighting */
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(138, 43, 226, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            padding: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Cinema spotlight effect on cards */
+        .user-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(138, 43, 226, 0.05) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .user-card:hover::before {
+            opacity: 1;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 12px 40px rgba(138, 43, 226, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            /* Purple-tinted border */
+            border-bottom: 2px solid rgba(138, 43, 226, 0.1);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1e293b;
+            font-size: 1.4rem;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .card-title i {
+            /* Purple icon color */
+            color: #8a2be2;
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px rgba(138, 43, 226, 0.3);
+        }
+
+        .add-btn {
+            /* Cinema-themed gradient button */
+            background: linear-gradient(135deg, #8a2be2 0%, #4b0082 50%, #2d1b69 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(138, 43, 226, 0.5),
+                0 0 20px rgba(138, 43, 226, 0.3);
+            background: linear-gradient(135deg, #9932cc 0%, #5d1a8b 50%, #3d2b7a 100%);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 45px;
+            border: 2px solid rgba(138, 43, 226, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+
+        .search-input:focus {
+            outline: none;
+            /* Purple focus border */
+            border-color: #8a2be2;
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            /* Purple search icon */
+            color: #8a2be2;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        th {
+            /* Cinema-themed header with purple gradient */
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1) 0%, rgba(138, 43, 226, 0.05) 100%);
+            color: #2d1b69;
+            font-weight: 600;
+            padding: 16px 12px;
+            text-align: left;
+            font-size: 0.9rem;
+            border-bottom: 2px solid rgba(138, 43, 226, 0.2);
+        }
+
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px solid rgba(138, 43, 226, 0.1);
+            color: #334155;
+            font-size: 0.9rem;
+        }
+
+        tr:hover {
+            /* Purple-tinted hover */
+            background: rgba(138, 43, 226, 0.05);
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .customer-badge {
+            /* Purple-themed customer badge */
+            background: rgba(138, 43, 226, 0.15);
+            color: #4b0082;
+        }
+
+        .staff-badge {
+            /* Purple-themed staff badge */
+            background: rgba(75, 0, 130, 0.15);
+            color: #2d1b69;
+        }
+
+        .point-value {
+            /* Purple point value */
+            color: #8a2be2;
+            font-weight: 600;
+            font-size: 1rem;
+            text-shadow: 0 0 5px rgba(138, 43, 226, 0.3);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: rgba(138, 43, 226, 0.1);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            border-radius: 8px;
+            padding: 8px 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #8a2be2;
+        }
+
+        .action-btn:hover {
+            background: #8a2be2;
+            color: white;
+            border-color: #8a2be2;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+        }
+
+        .action-btn.delete:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Modal Styles */
+        .form-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* Cinema-themed modal backdrop */
+            background: rgba(45, 27, 105, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .form-popup.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            min-width: 380px;
+            max-width: 480px;
+            /* Cinema-themed modal shadow */
+            box-shadow: 
+                0 20px 60px rgba(138, 43, 226, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .form-popup.show .form-card {
+            transform: scale(1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #8a2be2;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: #ef4444;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        .form-title {
+            color: #2d1b69;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 0 0 5px rgba(138, 43, 226, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(138, 43, 226, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #8a2be2;
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            /* Cinema-themed submit button */
+            background: linear-gradient(135deg, #8a2be2 0%, #4b0082 50%, #2d1b69 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 25px rgba(138, 43, 226, 0.5),
+                0 0 20px rgba(138, 43, 226, 0.3);
+            background: linear-gradient(135deg, #9932cc 0%, #5d1a8b 50%, #3d2b7a 100%);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .user-layout {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-bar {
+                gap: 10px;
+            }
+            
+            .stat-card {
+                padding: 15px 20px;
+                min-width: 120px;
+            }
+            
+            .user-card {
+                padding: 18px; /* reduced mobile padding from 20px to 18px */
+            }
+            
+            .form-card {
+                min-width: 300px; /* reduced mobile modal width from 320px to 300px */
+                padding: 30px 25px;
+                margin: 20px;
+            }
+            
+            table {
+                font-size: 0.8rem;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8a2be2;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+            color: #8a2be2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-film"></i> Hệ thống quản lý</h1>
+            <p>Quản lý khách hàng và nhân viên một cách hiệu quả</p>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-number" id="customerCount">0</div>
+                <div class="stat-label">Khách hàng</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="staffCount">0</div>
+                <div class="stat-label">Nhân viên</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalUsers">0</div>
+                <div class="stat-label">Tổng cộng</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="user-layout">
+            <!-- Khách hàng -->
+            <div class="user-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-users"></i>
+                        Khách hàng
+                    </div>
+                    <button class="add-btn" onclick="openForm('1')">
+                        <i class="fas fa-plus"></i>
+                        Thêm mới
+                    </button>
+                </div>
+                
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchCustomer" placeholder="Tìm kiếm khách hàng...">
+                </div>
+                
+                <div class="table-container">
+                    <table id="customerTable">
+                        <thead>
+                            <tr>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th>Điểm</th>
+                                <th>Giới tính</th>
+                                <th>Ngày sinh</th>
+                                <th>SĐT</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Nhân viên -->
+            <div class="user-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-user-tie"></i>
+                        Nhân viên
+                    </div>
+                    <button class="add-btn" onclick="openForm('2')">
+                        <i class="fas fa-plus"></i>
+                        Thêm mới
+                    </button>
+                </div>
+                
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchStaff" placeholder="Tìm kiếm nhân viên...">
+                </div>
+                
+                <div class="table-container">
+                    <table id="staffTable">
+                        <thead>
+                            <tr>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th>Giới tính</th>
+                                <th>Ngày sinh</th>
+                                <th>SĐT</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form -->
+    <div id="formPopup" class="form-popup">
+        <div class="form-card">
+            <button class="close-btn" onclick="closeForm()">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="form-title" id="formTitle">Thêm mới</h3>
+            <form id="userForm">
+                <input type="hidden" id="formId">
+                
+                <div class="form-group">
+                    <input type="text" class="form-input" id="formName" placeholder="Họ và tên *" required>
+                </div>
+                
+                <div class="form-group">
+                    <input type="email" class="form-input" id="formEmail" placeholder="Email *" required>
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" class="form-input" id="formPhone" placeholder="Số điện thoại *" required>
+                </div>
+                
+                <div class="form-group">
+                    <select class="form-select" id="formGender" required>
+                        <option value="">Chọn giới tính *</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <input type="date" class="form-input" id="formBirthday" required>
+                </div>
+                
+                <div class="form-group" id="formPointGroup">
+                    <input type="number" class="form-input" id="formPoint" placeholder="Điểm tích lũy" min="0" value="0">
+                </div>
+                
+                <div class="form-group">
+                    <select class="form-select" id="formRole" required>
+                        <option value="1">Khách hàng</option>
+                        <option value="2">Nhân viên</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <input type="password" class="form-input" id="formPassword" placeholder="Mật khẩu *" required>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <span id="submitText">Lưu thông tin</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://67ac56315853dfff53da3fd1.mockapi.io/Khach_Hang";
+        let allUsers = [];
+        let editingId = null;
+
+        // Fetch users from API
+        async function fetchUsers() {
+            try {
+                const res = await fetch(API_URL);
+                allUsers = await res.json();
+                renderTables();
+                updateStats();
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const customers = allUsers.filter(u => u.vai_tro == 1);
+            const staffs = allUsers.filter(u => u.vai_tro == 2);
+            
+            document.getElementById('customerCount').textContent = customers.length;
+            document.getElementById('staffCount').textContent = staffs.length;
+            document.getElementById('totalUsers').textContent = allUsers.length;
+        }
+
+        // Render both tables
+        function renderTables() {
+            const customers = allUsers.filter(u => u.vai_tro == 1);
+            const staffs = allUsers.filter(u => u.vai_tro == 2);
+            renderTable("customerTable", customers, true);
+            renderTable("staffTable", staffs, false);
+        }
+
+        // Render individual table
+        function renderTable(tableId, data, isCustomer) {
+            const table = document.getElementById(tableId);
+            let html = `
+                <thead>
+                    <tr>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        ${isCustomer ? '<th>Điểm</th>' : ''}
+                        <th>Giới tính</th>
+                        <th>Ngày sinh</th>
+                        <th>SĐT</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            if (data.length === 0) {
+                html += `<tr><td colspan="${isCustomer ? 7 : 6}" class="empty-state"><i class="fas fa-user-slash"></i> Không có dữ liệu</td></tr>`;
+            } else {
+                html += data.map(u => `
+                    <tr>
+                        <td>
+                            ${u.ho_ten}
+                            <span class="role-badge ${isCustomer ? 'customer-badge' : 'staff-badge'}">
+                                <i class="fas fa-user${isCustomer ? '' : '-tie'}"></i> ${isCustomer ? 'Khách hàng' : 'Nhân viên'}
+                            </span>
+                        </td>
+                        <td>${u.email}</td>
+                        ${isCustomer ? `<td><span class="point-value">${u.diem || 0}</span></td>` : ''}
+                        <td>${u.gioi_tinh}</td>
+                        <td>${u.ngay_sinh}</td>
+                        <td>${u.so_dien_thoai}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn" title="Sửa" onclick="editUser('${u.khach_hang_id}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn delete" title="Xóa" onclick="deleteUser('${u.khach_hang_id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join("");
+            }
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        // Search functionality for customers
+        document.getElementById("searchCustomer").addEventListener("input", function() {
+            const val = this.value.toLowerCase();
+            const filtered = allUsers.filter(u => u.vai_tro == 1 && (
+                u.ho_ten.toLowerCase().includes(val) ||
+                u.email.toLowerCase().includes(val) ||
+                u.so_dien_thoai.toLowerCase().includes(val)
+            ));
+            renderTable("customerTable", filtered, true);
+        });
+
+        // Search functionality for staff
+        document.getElementById("searchStaff").addEventListener("input", function() {
+            const val = this.value.toLowerCase();
+            const filtered = allUsers.filter(u => u.vai_tro == 2 && (
+                u.ho_ten.toLowerCase().includes(val) ||
+                u.email.toLowerCase().includes(val) ||
+                u.so_dien_thoai.toLowerCase().includes(val)
+            ));
+            renderTable("staffTable", filtered, false);
+        });
+
+        // Open form for adding new user
+        function openForm(role) {
+            editingId = null;
+            document.getElementById("formTitle").textContent = "Thêm người dùng mới";
+            document.getElementById("userForm").reset();
+            document.getElementById("formRole").value = role;
+            showPointField(role);
+            document.getElementById("formPopup").classList.add('show');
+        }
+
+        // Close form
+        function closeForm() {
+            document.getElementById("formPopup").classList.remove('show');
+        }
+
+        // Show/hide point field based on role
+        document.getElementById("formRole").addEventListener("change", function() {
+            showPointField(this.value);
+        });
+
+        function showPointField(role) {
+            const pointGroup = document.getElementById("formPointGroup");
+            pointGroup.style.display = role == "1" ? "block" : "none";
+        }
+
+        // Edit user
+        window.editUser = function(id) {
+            const u = allUsers.find(x => x.khach_hang_id == id);
+            if (!u) return;
+            
+            editingId = id;
+            document.getElementById("formTitle").textContent = "Chỉnh sửa thông tin";
+            document.getElementById("formId").value = u.khach_hang_id;
+            document.getElementById("formName").value = u.ho_ten;
+            document.getElementById("formEmail").value = u.email;
+            document.getElementById("formPhone").value = u.so_dien_thoai;
+            document.getElementById("formGender").value = u.gioi_tinh;
+            document.getElementById("formBirthday").value = u.ngay_sinh;
+            document.getElementById("formPoint").value = u.diem || 0;
+            document.getElementById("formRole").value = u.vai_tro;
+            document.getElementById("formPassword").value = u.mat_khau || "";
+            showPointField(u.vai_tro);
+            document.getElementById("formPopup").classList.add('show');
+        }
+
+        // Delete user
+        window.deleteUser = async function(id) {
+            if (!confirm("Bạn có chắc chắn muốn xóa người dùng này không?")) return;
+            
+            try {
+                await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+                await fetchUsers();
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Có lỗi xảy ra khi xóa người dùng');
+            }
+        }
+
+        // Handle form submission
+        document.getElementById("userForm").onsubmit = async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.querySelector('.submit-btn');
+            const submitText = document.getElementById('submitText');
+            const originalText = submitText.textContent;
+            
+            // Show loading state
+            submitText.innerHTML = '<span class="loading"></span> Đang xử lý...';
+            submitBtn.disabled = true;
+            
+            try {
+                const role = document.getElementById("formRole").value;
+                const data = {
+                    ho_ten: document.getElementById("formName").value,
+                    email: document.getElementById("formEmail").value,
+                    so_dien_thoai: document.getElementById("formPhone").value,
+                    gioi_tinh: document.getElementById("formGender").value,
+                    ngay_sinh: document.getElementById("formBirthday").value,
+                    diem: role == "1" ? Number(document.getElementById("formPoint").value) : 0,
+                    vai_tro: Number(role),
+                    mat_khau: document.getElementById("formPassword").value
+                };
+
+                if (editingId) {
+                    await fetch(`${API_URL}/${editingId}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+                }
+                
+                closeForm();
+                await fetchUsers();
+            } catch (error) {
+                console.error('Error saving user:', error);
+                alert('Có lỗi xảy ra khi lưu thông tin');
+            } finally {
+                // Reset button state
+                submitText.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        };
+
+        // Close modal when clicking outside
+        document.getElementById('formPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeForm();
+            }
+        });
+
+        // Initialize app
+        fetchUsers();
+    </script>
+</body>
+</html>

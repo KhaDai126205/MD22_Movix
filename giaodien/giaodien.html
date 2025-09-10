@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SlideShow CRUD</title>
+  <link rel="stylesheet" href="../styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      padding: 30px;
+      color: #333;
+    }
+
+    h2, h3 {
+      color: #444;
+    }
+
+    .form-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      max-width: 600px;
+    }
+
+    .form-container input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .form-container button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .form-container button:hover {
+      background-color: #45a049;
+    }
+
+    #slideList {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .slide {
+      background: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      width: 300px;
+    }
+
+    .slide img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .actions button {
+      flex: 1;
+      padding: 8px;
+      margin-right: 5px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .actions button:nth-child(1) {
+      background-color: #007bff;
+    }
+
+    .actions button:nth-child(2) {
+      background-color: #dc3545;
+    }
+
+    .actions button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+<div class="bg-elements">
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+        <div class="bg-circle bg-circle-3"></div>
+        <div class="bg-gradient-overlay"></div>
+    </div>
+  <div class="form-container">
+    <h3>Thêm hoặc Sửa Slide</h3>
+    <input type="text" id="avatar" placeholder="Nhập URL ảnh...">
+    <input type="hidden" id="slideId">
+    <button onclick="addOrUpdateSlide()">Lưu Slide</button>
+  </div>
+
+  <h2>Danh sách Slide</h2>
+  <div id="slideList"></div>
+
+
+  <div class="form-container2">
+  <h3>Thay đổi Banner</h3>
+  <input type="text" id="banner" placeholder="Nhập URL ảnh banner...">
+  <button onclick="saveBanner()">Lưu Banner</button>
+</div>
+
+<img id="bannerImage" src="" alt="Banner" style="width: 100%; max-width: 500px; margin-top: 20px;">
+  
+
+  <script>
+    const apiURL = "https://67ac55285853dfff53da3574.mockapi.io/slideShow";
+
+    async function fetchSlides() {
+      const res = await fetch(apiURL);
+      const data = await res.json();
+      const slideList = document.getElementById("slideList");
+      slideList.innerHTML = "";
+      data.forEach(slide => {
+        slideList.innerHTML += `
+          <div class="slide">
+            <img src="${slide.avatar}" alt="Slide">
+            <div class="actions">
+              <button onclick="editSlide('${slide.id}', '${slide.avatar}')">Sửa</button>
+              <button onclick="deleteSlide('${slide.id}')">Xóa</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    async function addOrUpdateSlide() {
+      const avatar = document.getElementById("avatar").value;
+      const id = document.getElementById("slideId").value;
+
+      if (avatar.trim() === "") return alert("Vui lòng nhập URL ảnh");
+
+      if (id === "") {
+        // THÊM
+        await fetch(apiURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ avatar })
+        });
+      } else {
+        // SỬA
+        await fetch(`${apiURL}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ avatar })
+        });
+      }
+
+      document.getElementById("avatar").value = "";
+      document.getElementById("slideId").value = "";
+      fetchSlides();
+    }
+
+    function editSlide(id, avatar) {
+      document.getElementById("avatar").value = avatar;
+      document.getElementById("slideId").value = id;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function deleteSlide(id) {
+      if (confirm("Bạn có chắc chắn muốn xóa không?")) {
+        await fetch(`${apiURL}/${id}`, { method: "DELETE" });
+        fetchSlides();
+      }
+    }
+
+    const bannerApi = "https://67b5f43207ba6e59083f3354.mockapi.io/banner";
+
+  // Hiển thị banner hiện tại
+  async function fetchBanner() {
+    const res = await fetch(bannerApi);
+    const data = await res.json();
+    if (data.length > 0) {
+      document.getElementById("bannerImage").src = data[0].banner;
+      document.getElementById("banner").value = data[0].banner;
+      document.getElementById("banner").setAttribute("data-id", data[0].id);
+    } else {
+      document.getElementById("bannerImage").src = "";
+      document.getElementById("banner").value = "";
+      document.getElementById("banner").removeAttribute("data-id");
+    }
+  }
+
+  // Xem trước banner khi nhập link
+  document.getElementById("banner").addEventListener("input", function() {
+    document.getElementById("bannerImage").src = this.value;
+  });
+
+  // Lưu hoặc cập nhật banner
+  async function saveBanner() {
+    const url = document.getElementById("banner").value.trim();
+    const id = document.getElementById("banner").getAttribute("data-id");
+    if (!url) return alert("Vui lòng nhập URL ảnh banner!");
+
+    if (id) {
+      // Đã có banner, cập nhật
+      await fetch(`${bannerApi}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ banner: url })
+      });
+    } else {
+      // Chưa có, tạo mới
+      await fetch(bannerApi, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ banner: url })
+      });
+    }
+    fetchBanner();
+    alert("Đã lưu banner!");
+  }
+
+  fetchSlides();
+  fetchBanner();
+  </script>
+
+  
+
+</body>
+</html>

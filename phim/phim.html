@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý phim</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet" />
+</head>
+
+<body>
+  <div class="bg-elements">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+    <div class="bg-circle bg-circle-3"></div>
+    <div class="bg-gradient-overlay"></div>
+  </div>
+  <div class="dashboard">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="logo-container">
+            <div class="logo-icon"><i class="fas fa-film"></i></div>
+            <div class="logo-text">
+              <h1>Cinema Movix</h1>
+              <p>Quản lý phim</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="film-layout">
+      <!-- Form nhập phim -->
+      <section class="film-form-card">
+        <h2 class="card-title">Thêm / Sửa phim</h2>
+        <form id="filmForm">
+          <input type="hidden" id="phim_id" />
+          <input type="text" id="ten_phim" placeholder="Tên phim" required />
+          <input type="text" id="dao_dien" placeholder="Đạo diễn" required />
+          <input type="text" id="ngon_ngu" placeholder="Ngôn ngữ" required />
+          <input type="number" id="do_tuoi" placeholder="Độ tuổi" required />
+          <textarea
+            id="mo_ta"
+            placeholder="Mô tả"
+            rows="3"
+            required></textarea>
+          <input
+            type="number"
+            id="thoi_luong"
+            placeholder="Thời lượng (phút)"
+            required />
+          <input
+            type="text"
+            id="poster_url"
+            placeholder="Poster URL"
+            required />
+          <input type="file" id="poster_file" accept="image/*" />
+          <img id="preview" class="preview-img" />
+          <input
+            type="text"
+            id="trailer_url"
+            placeholder="Trailer URL"
+            required />
+          <select id="the_loai" required>
+            <option value="">-- Chọn thể loại --</option>
+            <option>Hành động</option>
+            <option>Phiêu lưu</option>
+            <option>Hài</option>
+            <option>Tình cảm / Lãng mạn</option>
+            <option>Tâm lý</option>
+            <option>Kinh dị</option>
+            <option>Giật gân</option>
+            <option>Bí ẩn</option>
+            <option>Khoa học viễn tưởng</option>
+            <option>Viễn tưởng - Giả tưởng</option>
+            <option>Hình sự</option>
+            <option>Chiến tranh</option>
+            <option>Chính kịch</option>
+            <option>Tài liệu</option>
+            <option>Phim tiểu sử</option>
+            <option>Âm nhạc</option>
+            <option>Gia đình</option>
+            <option>Thể thao</option>
+            <option>Phim thiếu nhi</option>
+          </select>
+          <button type="submit" class="btn-save">💾 Lưu</button>
+        </form>
+      </section>
+
+      <!-- Danh sách phim -->
+      <section class="film-list-card">
+        <div class="film-list-header">
+          <h2 class="card-title">Danh sách phim</h2>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="🔍 Tìm kiếm phim..." />
+        </div>
+        <div id="toast" class="film-toast">Tải ảnh thành công!</div>
+        <div id="filmList"></div>
+        <div id="pagination" class="pagination"></div>
+      </section>
+    </div>
+  </div>
+  <div class="film-layout">
+    <!-- Form nhập phim -->
+    <div class="film-form-card">
+      <form id="filmForm">
+        <input type="hidden" id="phim_id">
+        <input type="text" id="ten_phim" placeholder="Tên phim" required>
+        <input type="text" id="dao_dien" placeholder="Đạo diễn" required>
+        <input type="text" id="ngon_ngu" placeholder="Ngôn ngữ" required>
+        <input type="number" id="do_tuoi" placeholder="Độ tuổi" required>
+        <input type="text" id="mo_ta" placeholder="Mô tả" required>
+        <input type="number" id="thoi_luong" placeholder="Thời lượng (phút)" required>
+        <input type="text" id="poster_url" placeholder="Poster URL" required>
+        <input type="file" id="poster_file" accept="image/*" />
+        <img id="preview" width="200px" style="margin-bottom: 10px; border-radius: 8px;" />
+        <input type="text" id="trailer_url" placeholder="Trailer URL" required>
+        <select id="the_loai" required>
+          <option value="">-- Chọn thể loại --</option>
+          <option>Hành động</option>
+          <option>Phiêu lưu</option>
+          <option>Hài</option>
+          <option>Tình cảm / Lãng mạn</option>
+          <option>Tâm lý</option>
+          <option>Kinh dị</option>
+          <option>Giật gân</option>
+          <option>Bí ẩn</option>
+          <option>Khoa học viễn tưởng</option>
+          <option>Viễn tưởng - Giả tưởng</option>
+          <option>Hình sự</option>
+          <option>Chiến tranh</option>
+          <option>Chính kịch</option>
+          <option>Tài liệu</option>
+          <option>Phim tiểu sử</option>
+          <option>Âm nhạc</option>
+          <option>Gia đình</option>
+          <option>Thể thao</option>
+          <option>Phim thiếu nhi</option>
+        </select>
+        <button type="submit" style="margin-top:12px;">Lưu</button>
+      </form>
+    </div>
+    <!-- Danh sách phim -->
+    <div class="film-list-area">
+      <div class="film-list-header">
+        <h2>Danh sách phim</h2>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm phim...">
+      </div>
+      <div id="toast" class="film-toast">Tải ảnh thành công!</div>
+      <div id="filmList"></div>
+    </div>
+  </div>
+  <!-- Script Upload ảnh -->
+  <script>
+    // Hiện toast
+    const toast = document.getElementById('toast');
+    toast.textContent = "Tải ảnh thành công!";
+    toast.style.display = "block";
+    setTimeout(() => { toast.style.display = "none"; }, 2000);
+    const imageInput = document.getElementById('poster_file');
+    const preview = document.getElementById('preview');
+    const posterUrl = document.getElementById('poster_url');
+
+    const IMGBB_API_KEY = 'd698d3c569cf045e45516a8fc568c999'; // Thay nếu cần
+
+    imageInput.addEventListener('change', async () => {
+      const file = imageInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Image = reader.result.split(',')[1];
+        const formData = new FormData();
+        formData.append('key', IMGBB_API_KEY);
+        formData.append('image', base64Image);
+
+        try {
+          const res = await fetch('https://api.imgbb.com/1/upload', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          if (data.success) {
+            const link = data.data.display_url || data.data.url;
+            posterUrl.value = link;
+            preview.src = link;
+          } else {
+            alert("Upload thất bại.");
+            console.log(data);
+          }
+        } catch (err) {
+          alert("Lỗi mạng hoặc không thể upload ảnh.");
+          console.error(err);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
+  <!-- Script chính xử lý CRUD -->
+  <script src="script.js"></script>
+</body>
+</html>

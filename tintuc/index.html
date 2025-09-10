@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quản lý Tin Tức</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      padding: 24px;
+      background: linear-gradient(135deg, #fffbe6 0%, #ffe5ec 100%);
+    }
+    h2 {
+      color: #d32f2f;
+      margin-top: 32px;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      text-shadow: 1px 2px 0 #fff3e0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2:before {
+      content: "📰";
+      font-size: 1.5em;
+      margin-right: 6px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1.5px solid #ffd6c1;
+      box-sizing: border-box;
+      font-size: 1rem;
+      background: #fff8f3;
+      transition: border 0.2s;
+    }
+    input:focus, textarea:focus {
+      border: 1.5px solid #d32f2f;
+      outline: none;
+    }
+    button {
+      padding: 12px 28px;
+      background: linear-gradient(90deg, #d32f2f 60%, #ff7043 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      box-shadow: 0 2px 8px rgba(255,112,67,0.08);
+      transition: background 0.2s, transform 0.1s;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #ff7043 60%, #d32f2f 100%);
+      transform: translateY(-2px) scale(1.04);
+    }
+    .card {
+      background: #fff;
+      padding: 18px;
+      margin-bottom: 18px;
+      border-radius: 12px;
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      box-shadow: 0 4px 16px rgba(211,47,47,0.08);
+      border-left: 6px solid #d32f2f;
+      position: relative;
+      transition: box-shadow 0.2s;
+    }
+    .card:hover {
+      box-shadow: 0 8px 32px #ff704344;
+    }
+    .card img {
+      width: 110px;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 10px;
+      background: #ffe5ec;
+      border: 2px solid #ffd6c1;
+      box-shadow: 0 2px 8px #ffd6c133;
+    }
+    .card-info {
+      flex: 1;
+    }
+    .card-info h3 {
+      margin: 0 0 8px;
+      font-size: 1.25rem;
+      color: #d32f2f;
+      font-weight: bold;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-info h3:before {
+      content: "🗞️";
+      font-size: 1.1em;
+    }
+    .card-info p {
+      margin: 0;
+      color: #333;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    .actions {
+      margin-top: 12px;
+    }
+    .actions button {
+      margin-right: 10px;
+      font-size: 1rem;
+      padding: 8px 18px;
+      border-radius: 6px;
+      background: #ffd6c1;
+      color: #d32f2f;
+      font-weight: bold;
+      border: none;
+      transition: background 0.2s, color 0.2s;
+      box-shadow: none;
+    }
+    .actions button:hover {
+      background: #d32f2f;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Thêm / Sửa Tin Tức</h2>
+  <input type="text" id="title" placeholder="Tiêu đề">
+  <textarea id="desc" rows="3" placeholder="Mô tả"></textarea>
+  <input type="text" id="img" placeholder="Link ảnh">
+  <button onclick="submitForm()">Lưu</button>
+
+  <h2>Danh sách Tin Tức</h2>
+  <div id="list"></div>
+
+  <script>
+    const api = 'https://67ac56315853dfff53da3fd1.mockapi.io/Tin_Tuc';
+    let editingId = null;
+
+    async function fetchData() {
+      const res = await fetch(api);
+      const data = await res.json();
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+
+      data.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          <img src="${item.imgTinTuc}" />
+          <div class="card-info">
+            <h3>${item.title}</h3>
+            <p>${item.desc}</p>
+            <div class="actions">
+              <button onclick="editItem('${item.id}')">✏️ Sửa</button>
+              <button onclick="deleteItem('${item.id}')">🗑️ Xóa</button>
+            </div>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    async function submitForm() {
+      const title = document.getElementById('title').value.trim();
+      const desc = document.getElementById('desc').value.trim();
+      const img = document.getElementById('img').value.trim();
+
+      if (!title || !desc || !img) {
+        alert('Vui lòng điền đầy đủ thông tin');
+        return;
+      }
+
+      const payload = {
+        title,
+        desc,
+        imgTinTuc: img
+      };
+
+      if (editingId) {
+        await fetch(`${api}/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        editingId = null;
+      } else {
+        await fetch(api, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      resetForm();
+      fetchData();
+    }
+
+    function editItem(id) {
+      fetch(`${api}/${id}`)
+        .then(res => res.json())
+        .then(item => {
+          document.getElementById('title').value = item.title;
+          document.getElementById('desc').value = item.desc;
+          document.getElementById('img').value = item.imgTinTuc;
+          editingId = id;
+        });
+    }
+
+    function resetForm() {
+      document.getElementById('title').value = '';
+      document.getElementById('desc').value = '';
+      document.getElementById('img').value = '';
+    }
+
+    async function deleteItem(id) {
+      if (confirm('Bạn chắc chắn muốn xóa tin này?')) {
+        await fetch(`${api}/${id}`, { method: 'DELETE' });
+        fetchData();
+      }
+    }
+
+    fetchData();
+  </script>
+</body>
+</html>
