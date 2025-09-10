@@ -108,56 +108,29 @@
       </section>
     </div>
   </div>
-  <div class="film-layout">
-    <!-- Form nhập phim -->
-    <div class="film-form-card">
-      <form id="filmForm">
-        <input type="hidden" id="phim_id">
-        <input type="text" id="ten_phim" placeholder="Tên phim" required>
-        <input type="text" id="dao_dien" placeholder="Đạo diễn" required>
-        <input type="text" id="ngon_ngu" placeholder="Ngôn ngữ" required>
-        <input type="number" id="do_tuoi" placeholder="Độ tuổi" required>
-        <input type="text" id="mo_ta" placeholder="Mô tả" required>
-        <input type="number" id="thoi_luong" placeholder="Thời lượng (phút)" required>
-        <input type="text" id="poster_url" placeholder="Poster URL" required>
-        <input type="file" id="poster_file" accept="image/*" />
-        <img id="preview" width="200px" style="margin-bottom: 10px; border-radius: 8px;" />
-        <input type="text" id="trailer_url" placeholder="Trailer URL" required>
-        <select id="the_loai" required>
-          <option value="">-- Chọn thể loại --</option>
-          <option>Hành động</option>
-          <option>Phiêu lưu</option>
-          <option>Hài</option>
-          <option>Tình cảm / Lãng mạn</option>
-          <option>Tâm lý</option>
-          <option>Kinh dị</option>
-          <option>Giật gân</option>
-          <option>Bí ẩn</option>
-          <option>Khoa học viễn tưởng</option>
-          <option>Viễn tưởng - Giả tưởng</option>
-          <option>Hình sự</option>
-          <option>Chiến tranh</option>
-          <option>Chính kịch</option>
-          <option>Tài liệu</option>
-          <option>Phim tiểu sử</option>
-          <option>Âm nhạc</option>
-          <option>Gia đình</option>
-          <option>Thể thao</option>
-          <option>Phim thiếu nhi</option>
-        </select>
-        <button type="submit" style="margin-top:12px;">Lưu</button>
-      </form>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <i class="fas fa-film"></i>
+      <span>Movix Admin</span>
     </div>
-    <!-- Danh sách phim -->
-    <div class="film-list-area">
-      <div class="film-list-header">
-        <h2>Danh sách phim</h2>
-        <input type="text" id="searchInput" placeholder="Tìm kiếm phim...">
-      </div>
-      <div id="toast" class="film-toast">Tải ảnh thành công!</div>
-      <div id="filmList"></div>
-    </div>
-  </div>
+    <nav class="sidebar-nav">
+      <a href="../index.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+      <a href="phim.html" class="active"><i class="fas fa-video"></i> Phim</a>
+      <a href="../suatchieu/index.html"
+        ><i class="fas fa-film"></i> Rạp chiếu</a
+      >
+      <a href="../tintuc/index.html"><i class="fas fa-users"></i> Tin tức</a>
+      <a href="../giaodien/giaodien.html"
+        ><i class="fas fa-building"></i> Giao diện</a
+      >
+      <a href="../giaodien/voucher.html"
+        ><i class="fas fa-gift"></i> Voucher</a
+      >
+      <a href="../food/food.html"><i class="fas fa-pizza-slice"></i> Food</a>
+      <a href="../user/user.html"><i class="fas fa-user"></i> User</a>
+    </nav>
+  </aside>
   <!-- Script Upload ảnh -->
   <script>
     // Hiện toast
