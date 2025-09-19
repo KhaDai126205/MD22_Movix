@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Voucher CRUD</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet" />
+    <link rel="stylesheet" href="../styles.css" />
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 220px;
+        background: rgba(26, 26, 46, 0.98);
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        padding: 32px 0;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Main content */
+      .main {
+        margin-left: 220px;
+        padding: 30px;
+        flex: 1;
+      }
+      /* Main content */
+      .main {
+        margin-left: 250px;
+        padding: 30px;
+        flex: 1;
+      }
+
+      h2 {
+        color: #6366f1;
+        margin-bottom: 20px;
+      }
+
+      .form-container {
+        background: #1e293b;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        max-width: 500px;
+        margin-bottom: 30px;
+      }
+
+      .form-container h3 {
+        margin-bottom: 16px;
+        color: #f1f5f9;
+      }
+
+      .form-container input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        border: 1px solid #475569;
+        background: #0f172a;
+        color: #f8fafc;
+      }
+
+      .form-container input:focus {
+        outline: none;
+        border: 1px solid #6366f1;
+      }
+
+      .form-container button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: #6366f1;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .form-container button:hover {
+        background: #4f46e5;
+      }
+
+      #voucherList {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      .voucher {
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 12px;
+        width: 300px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+      }
+
+      .voucher .info {
+        margin-bottom: 8px;
+        font-size: 15px;
+        color: #e2e8f0;
+      }
+
+      .voucher .tag {
+        background: #6366f1;
+        color: #fff;
+        border-radius: 6px;
+        padding: 2px 8px;
+        margin-left: 5px;
+        font-size: 0.9em;
+        font-weight: 600;
+      }
+
+      .voucher .expire {
+        color: #f87171;
+        font-weight: bold;
+        margin-left: 5px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .actions button {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .actions button:nth-child(1) {
+        background: #22c55e;
+      }
+
+      .actions button:nth-child(1):hover {
+        background: #16a34a;
+      }
+
+      .actions button:nth-child(2) {
+        background: #ef4444;
+      }
+
+      .actions button:nth-child(2):hover {
+        background: #b91c1c;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i class="fas fa-table-cells-large"></i>
+        <span>Movix Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="../index.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="../phim/phim.html"><i class="fas fa-video"></i> Phim</a>
+        <a href="../suatchieu/index.html"
+          ><i class="fas fa-film"></i> Rạp chiếu</a
+        >
+        <a href="../tintuc/index.html"
+          ><i class="fas fa-newspaper"></i> Tin tức</a
+        >
+        <a href="../giaodien/giaodien.html"
+          ><i class="fas fa-building"></i> Giao diện</a
+        >
+        <a href="../giaodien/voucher.html" class="active"
+          ><i class="fas fa-gift"></i> Voucher</a
+        >
+        <a href="../food/food.html"><i class="fas fa-pizza-slice"></i> Food</a>
+        <a href="../user/user.html"><i class="fas fa-user"></i> User</a>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+      <h2>🎁 Quản lý Voucher Ưu Đãi</h2>
+      <div class="form-container">
+        <h3>Thêm hoặc Sửa Voucher</h3>
+        <input type="text" id="ma_voucher" placeholder="Mã voucher" />
+        <input type="number" id="giam_gia" placeholder="Giảm giá (%)" />
+        <input
+          type="date"
+          id="thoi_gian_het_han"
+          placeholder="Thời gian hết hạn" />
+        <input type="hidden" id="voucher_id" />
+        <button onclick="addOrUpdateVoucher()">Lưu Voucher</button>
+      </div>
+
+      <h2>Danh sách Voucher</h2>
+      <div id="voucherList"></div>
+    </div>
+
+    <script>
+      const apiURL = `http://localhost:3000/voucher`;
+
+      async function fetchVouchers() {
+        const res = await fetch(apiURL);
+        const data = await res.json();
+        const list = document.getElementById('voucherList');
+        list.innerHTML = '';
+
+        data.forEach(v => {
+          list.innerHTML += `
+          <div class="voucher">
+            <div class="info"><strong>Mã:</strong> <span class="tag">${v.ma_voucher}</span></div>
+            <div class="info"><strong>Giảm giá:</strong> <span class="tag">${v.giam_gia}%</span></div>
+            <div class="info"><strong>Hết hạn:</strong> <span class="expire">${v.thoi_gian_het_han}</span></div>
+            <div class="actions">
+              <button onclick="editVoucher('${v.voucher_id}', '${v.ma_voucher}', '${v.giam_gia}', '${v.thoi_gian_het_han}')">Sửa</button>
+              <button onclick="deleteVoucher('${v.voucher_id}')">Xóa</button>
+            </div>
+          </div>
+        `;
+        });
+      }
+
+      async function addOrUpdateVoucher() {
+        const ma_voucher = document.getElementById('ma_voucher').value;
+        const giam_gia = parseInt(document.getElementById('giam_gia').value);
+        const thoi_gian_het_han =
+          document.getElementById('thoi_gian_het_han').value;
+        const id = document.getElementById('voucher_id').value;
+
+        if (!ma_voucher || !giam_gia || !thoi_gian_het_han) {
+          return alert('Vui lòng nhập đầy đủ thông tin!');
+        }
+
+        const voucher = {
+          ma_voucher,
+          giam_gia,
+          thoi_gian_het_han,
+          khach_hang_id: '',
+        };
+
+        if (id === '') {
+          await fetch(apiURL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(voucher),
+          });
+        } else {
+          await fetch(`${apiURL}/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(voucher),
+          });
+        }
+
+        document.getElementById('ma_voucher').value = '';
+        document.getElementById('giam_gia').value = '';
+        document.getElementById('thoi_gian_het_han').value = '';
+        document.getElementById('voucher_id').value = '';
+
+        fetchVouchers();
+      }
+
+      function editVoucher(id, ma_voucher, giam_gia, thoi_gian_het_han) {
+        document.getElementById('ma_voucher').value = ma_voucher;
+        document.getElementById('giam_gia').value = giam_gia;
+        document.getElementById('thoi_gian_het_han').value = thoi_gian_het_han;
+        document.getElementById('voucher_id').value = id;
+        window.scrollTo({top: 0, behavior: 'smooth'});
+      }
+
+      async function deleteVoucher(id) {
+        if (confirm('Bạn chắc chắn muốn xóa voucher này?')) {
+          await fetch(`${apiURL}/${id}`, {
+            method: 'DELETE',
+          });
+          fetchVouchers();
+        }
+      }
+
+      fetchVouchers();
+    </script>
+  </body>
+</html>

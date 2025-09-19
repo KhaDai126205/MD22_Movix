@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SlideShow CRUD</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        color: #f1f1f1;
+      }
+
+      h2,
+      h3 {
+        color: #fff;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 220px;
+        height: 100%;
+        background: rgba(26, 26, 46, 0.98);
+        border-right: 1px solid #333;
+        padding: 32px 0;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.4);
+        z-index: 999;
+      }
+
+      /* Container chính */
+      .container {
+        margin-left: 240px;
+        padding: 20px;
+      }
+
+      /* Form card */
+      .form-container,
+      .form-container2 {
+        background: #1b1b3a;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        margin-bottom: 30px;
+        max-width: 650px;
+      }
+
+      .form-container input,
+      .form-container2 input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 12px;
+        border: 1px solid #3f4c6b;
+        border-radius: 8px;
+        font-size: 16px;
+        background: #0f3460;
+        color: #fff;
+      }
+
+      .form-container button,
+      .form-container2 button {
+        padding: 10px 20px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border: none;
+        color: white;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.3s;
+      }
+
+      .form-container button:hover,
+      .form-container2 button:hover {
+        background: linear-gradient(90deg, #764ba2, #667eea);
+        transform: translateY(-2px);
+      }
+
+      #slideList {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      .slide {
+        background: #1b1b3a;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        width: 300px;
+        transition: transform 0.2s;
+      }
+
+      .slide:hover {
+        transform: translateY(-3px);
+      }
+
+      .slide img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .actions button {
+        flex: 1;
+        padding: 8px;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s;
+      }
+
+      .actions button:nth-child(1) {
+        background: #3498db;
+      }
+
+      .actions button:nth-child(2) {
+        background: #e74c3c;
+      }
+
+      .actions button:hover {
+        opacity: 0.9;
+        transform: scale(1.05);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i class="fas fa-film"></i>
+        <span>Movix Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="../index.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="../phim/phim.html"><i class="fas fa-video"></i> Phim</a>
+        <a href="../suatchieu/index.html"
+          ><i class="fas fa-film"></i> Rạp chiếu</a
+        >
+        <a href="../tintuc/index.html"
+          ><i class="fas fa-newspaper"></i> Tin tức</a
+        >
+        <a href="../giaodien/giaodien.html"
+          ><i class="fas fa-building"></i> Giao diện</a
+        >
+        <a href="../giaodien/voucher.html"
+          ><i class="fas fa-gift"></i> Voucher</a
+        >
+        <a href="../food/food.html"><i class="fas fa-pizza-slice"></i> Food</a>
+        <a href="../user/user.html"><i class="fas fa-user"></i> User</a>
+      </nav>
+    </aside>
+
+    <!-- Nội dung chính -->
+    <div class="container">
+      <div class="form-container">
+        <h3>Thêm hoặc Sửa Slide</h3>
+        <input type="text" id="avatar" placeholder="Nhập URL ảnh..." />
+        <input type="hidden" id="slideId" />
+        <button onclick="addOrUpdateSlide()">Lưu Slide</button>
+      </div>
+
+      <h2>Danh sách Slide</h2>
+      <div id="slideList"></div>
+
+      <div class="form-container2">
+        <h3>Thay đổi Banner</h3>
+        <input type="text" id="banner" placeholder="Nhập URL ảnh banner..." />
+        <button onclick="saveBanner()">Lưu Banner</button>
+      </div>
+
+      <img
+        id="bannerImage"
+        src=""
+        alt="Banner"
+        style="
+          width: 100%;
+          max-width: 500px;
+          margin-top: 20px;
+          border-radius: 12px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        " />
+    </div>
+
+    <script>
+      const apiURL = 'https://67ac55285853dfff53da3574.mockapi.io/slideShow';
+
+      async function fetchSlides() {
+        const res = await fetch(apiURL);
+        const data = await res.json();
+        const slideList = document.getElementById('slideList');
+        slideList.innerHTML = '';
+        data.forEach(slide => {
+          slideList.innerHTML += `
+          <div class="slide">
+            <img src="${slide.avatar}" alt="Slide">
+            <div class="actions">
+              <button onclick="editSlide('${slide.id}', '${slide.avatar}')">Sửa</button>
+              <button onclick="deleteSlide('${slide.id}')">Xóa</button>
+            </div>
+          </div>
+        `;
+        });
+      }
+
+      async function addOrUpdateSlide() {
+        const avatar = document.getElementById('avatar').value;
+        const id = document.getElementById('slideId').value;
+
+        if (avatar.trim() === '') return alert('Vui lòng nhập URL ảnh');
+
+        if (id === '') {
+          await fetch(apiURL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({avatar}),
+          });
+        } else {
+          await fetch(`${apiURL}/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({avatar}),
+          });
+        }
+
+        document.getElementById('avatar').value = '';
+        document.getElementById('slideId').value = '';
+        fetchSlides();
+      }
+
+      function editSlide(id, avatar) {
+        document.getElementById('avatar').value = avatar;
+        document.getElementById('slideId').value = id;
+        window.scrollTo({top: 0, behavior: 'smooth'});
+      }
+
+      async function deleteSlide(id) {
+        if (confirm('Bạn có chắc chắn muốn xóa không?')) {
+          await fetch(`${apiURL}/${id}`, {method: 'DELETE'});
+          fetchSlides();
+        }
+      }
+
+      const bannerApi = 'https://67b5f43207ba6e59083f3354.mockapi.io/banner';
+
+      async function fetchBanner() {
+        const res = await fetch(bannerApi);
+        const data = await res.json();
+        if (data.length > 0) {
+          document.getElementById('bannerImage').src = data[0].banner;
+          document.getElementById('banner').value = data[0].banner;
+          document.getElementById('banner').setAttribute('data-id', data[0].id);
+        } else {
+          document.getElementById('bannerImage').src = '';
+          document.getElementById('banner').value = '';
+          document.getElementById('banner').removeAttribute('data-id');
+        }
+      }
+
+      document.getElementById('banner').addEventListener('input', function () {
+        document.getElementById('bannerImage').src = this.value;
+      });
+
+      async function saveBanner() {
+        const url = document.getElementById('banner').value.trim();
+        const id = document.getElementById('banner').getAttribute('data-id');
+        if (!url) return alert('Vui lòng nhập URL ảnh banner!');
+
+        if (id) {
+          await fetch(`${bannerApi}/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({banner: url}),
+          });
+        } else {
+          await fetch(bannerApi, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({banner: url}),
+          });
+        }
+        fetchBanner();
+        alert('Đã lưu banner!');
+      }
+
+      fetchSlides();
+      fetchBanner();
+    </script>
+  </body>
+</html>

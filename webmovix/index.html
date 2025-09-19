@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Thống Kê Rạp Chiếu Phim</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-elements">
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+        <div class="bg-circle bg-circle-3"></div>
+        <div class="bg-gradient-overlay"></div>
+    </div>
+
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo-container">
+                        <div class="logo-icon">
+                            <i class="fas fa-film"></i>
+                        </div>
+                        <div class="logo-text">
+                            <h1>Cinema Movix</h1>
+                            <p>Dashboard Thống Kê Rạp Chiếu Phim</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="date-filter">
+                        <div class="filter-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <select id="dateRange">
+                            <option value="all">Tất cả thời gian</option>
+                            <option value="today">Hôm nay</option>
+                            <option value="week">7 ngày qua</option>
+                            <option value="month">Tháng này</option>
+                        </select>
+                    </div>
+                    <div class="refresh-btn" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Stats Cards -->
+            <section class="stats-grid">
+                <div class="stat-card revenue" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-background">
+                        <div class="stat-pattern"></div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Tổng Doanh Thu</h3>
+                        <p class="stat-value" id="totalRevenue">0 VNĐ</p>
+                        <div class="stat-footer">
+                            <span class="stat-change positive" id="revenueChange">+0%</span>
+                            <span class="stat-period">so với tháng trước</span>
+                        </div>
+                    </div>
+                    <div class="stat-sparkline">
+                        <div class="sparkline-bar" style="height: 20%"></div>
+                        <div class="sparkline-bar" style="height: 40%"></div>
+                        <div class="sparkline-bar" style="height: 60%"></div>
+                        <div class="sparkline-bar" style="height: 80%"></div>
+                        <div class="sparkline-bar" style="height: 100%"></div>
+                    </div>
+                </div>
+
+                <div class="stat-card tickets" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-background">
+                        <div class="stat-pattern"></div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Tổng Vé Bán</h3>
+                        <p class="stat-value" id="totalTickets">0</p>
+                        <div class="stat-footer">
+                            <span class="stat-change positive" id="ticketsChange">+0%</span>
+                            <span class="stat-period">so với tháng trước</span>
+                        </div>
+                    </div>
+                    <div class="stat-sparkline">
+                        <div class="sparkline-bar" style="height: 30%"></div>
+                        <div class="sparkline-bar" style="height: 70%"></div>
+                        <div class="sparkline-bar" style="height: 50%"></div>
+                        <div class="sparkline-bar" style="height: 90%"></div>
+                        <div class="sparkline-bar" style="height: 60%"></div>
+                    </div>
+                </div>
+
+                <div class="stat-card movies" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-background">
+                        <div class="stat-pattern"></div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Tổng Phim</h3>
+                        <p class="stat-value" id="totalMovies">0</p>
+                        <div class="stat-footer">
+                            <span class="stat-change neutral" id="moviesChange">0%</span>
+                            <span class="stat-period">so với tháng trước</span>
+                        </div>
+                    </div>
+                    <div class="stat-sparkline">
+                        <div class="sparkline-bar" style="height: 100%"></div>
+                        <div class="sparkline-bar" style="height: 100%"></div>
+                        <div class="sparkline-bar" style="height: 100%"></div>
+                        <div class="sparkline-bar" style="height: 100%"></div>
+                        <div class="sparkline-bar" style="height: 100%"></div>
+                    </div>
+                </div>
+
+                <div class="stat-card customers" data-aos="fade-up" data-aos-delay="400">
+                    <div class="stat-background">
+                        <div class="stat-pattern"></div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Khách Hàng</h3>
+                        <p class="stat-value" id="totalCustomers">0</p>
+                        <div class="stat-footer">
+                            <span class="stat-change positive" id="customersChange">+0%</span>
+                            <span class="stat-period">so với tháng trước</span>
+                        </div>
+                    </div>
+                    <div class="stat-sparkline">
+                        <div class="sparkline-bar" style="height: 40%"></div>
+                        <div class="sparkline-bar" style="height: 60%"></div>
+                        <div class="sparkline-bar" style="height: 80%"></div>
+                        <div class="sparkline-bar" style="height: 70%"></div>
+                        <div class="sparkline-bar" style="height: 90%"></div>
+                    </div>
+                </div>
+
+                <!-- Tỷ lệ lấp đầy ghế -->
+                
+
+              
+
+               
+                
+
+                <!-- Ghế đã bán -->
+                <div class="stat-card sold-seats" data-aos="fade-up" data-aos-delay="800">
+                    <div class="stat-background">
+                        <div class="stat-pattern"></div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Ghế Đã Bán</h3>
+                        <p class="stat-value" id="soldSeats">0</p>
+                        <div class="stat-footer">
+                            <span class="stat-period">trong tháng này</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card payment-methods" data-aos="fade-up" data-aos-delay="900">
+                    <div class="stat-background">
+                        <div class="stat-pattern"></div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Phương Thức Thanh Toán</h3>
+                        <div class="stat-value" id="paymentMethodsStats" style="font-size:1.1rem;line-height:1.6;"></div>
+                        <div class="stat-footer">
+                            <span class="stat-period">Tổng số giao dịch</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="chart-container" data-aos="fade-up" data-aos-delay="500">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <div class="chart-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <h3>Doanh Thu Theo Thời Gian</h3>
+                                <p>Biểu đồ doanh thu hàng ngày</p>
+                            </div>
+                        </div>
+                        <div class="chart-actions">
+                            <button class="chart-btn active">7 ngày</button>
+                            <button class="chart-btn">30 ngày</button>
+                        </div>
+                    </div>
+                    <div class="chart-content">
+                        <div class="simple-chart" id="revenueChart">
+                            <div class="loading-chart">Đang tải dữ liệu...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container" data-aos="fade-up" data-aos-delay="600">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <div class="chart-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div>
+                                <h3>Phim Phổ Biến</h3>
+                                <p>Top phim được xem nhiều nhất</p>
+                            </div>
+                        </div>
+                        <div class="chart-actions">
+                            <button class="chart-btn active">Top 5</button>
+                        </div>
+                    </div>
+                    <div class="chart-content">
+                        <div class="movie-stats" id="moviesChart">
+                            <div class="loading-chart">Đang tải dữ liệu...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tables Section -->
+            <section class="tables-section">
+                <div class="table-container" data-aos="fade-up" data-aos-delay="700">
+                    <div class="table-header">
+                        <div class="table-title">
+                            <div class="table-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div>
+                                <h3>Top Phim Bán Chạy</h3>
+                                <p>Xếp hạng theo doanh thu</p>
+                            </div>
+                        </div>
+                        <div class="table-actions">
+                            <button class="table-btn">
+                                <i class="fas fa-download"></i>
+                                Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-content">
+                        <div class="table-wrapper">
+                            <table id="topMoviesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Hạng</th>
+                                        <th>Tên Phim</th>
+                                        <th>Thể Loại</th>
+                                        <th>Số Vé</th>
+                                        <th>Doanh Thu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5" class="loading-row">
+                                            <div class="loading-skeleton"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container" data-aos="fade-up" data-aos-delay="800">
+                    <div class="table-header">
+                        <div class="table-title">
+                            <div class="table-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div>
+                                <h3>Thống Kê Theo Rạp</h3>
+                                <p>Hiệu suất từng cơ sở</p>
+                            </div>
+                        </div>
+                        <div class="table-actions">
+                            <button class="table-btn">
+                                <i class="fas fa-chart-bar"></i>
+                                Xem Chi Tiết
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-content">
+                        <div class="table-wrapper">
+                            <table id="cinemaStatsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Tên Rạp</th>
+                                        <th>Địa Chỉ</th>
+                                        <th>Số Vé</th>
+                                        <th>Doanh Thu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" class="loading-row">
+                                            <div class="loading-skeleton"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Transactions -->
+            <section class="recent-section" data-aos="fade-up" data-aos-delay="900">
+                <div class="recent-container">
+                    <div class="recent-header">
+                        <div class="recent-title">
+                            <div class="recent-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <h3>Giao Dịch Gần Đây</h3>
+                                <p>10 giao dịch mới nhất</p>
+                            </div>
+                        </div>
+                        <div class="recent-actions">
+                            <button class="recent-btn">
+                                <i class="fas fa-eye"></i>
+                                Xem Tất Cả
+                            </button>
+                        </div>
+                    </div>
+                    <div class="recent-content" id="recentTransactions">
+                        <div class="loading-transactions">
+                            <div class="loading-transaction">
+                                <div class="loading-avatar"></div>
+                                <div class="loading-details">
+                                    <div class="loading-line"></div>
+                                    <div class="loading-line short"></div>
+                                </div>
+                                <div class="loading-amount"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- AOS Animation Library -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <i class="fas fa-film"></i>
+        <span>Movix Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="#" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        
+        <a href="phim/phim.html"><i class="fas fa-video"></i> Phim</a>
+        <a href="suatchieu/index.html"><i class="fas fa-film"></i> Rạp chiếu</a>
+        <a href="tintuc/index.html"><i class="fas fa-users"></i> Tin tức</a>
+        <a href="giaodien/giaodien.html"><i class="fas fa-building"></i> Giao diện</a>
+        <a href="giaodien/voucher.html"><i class="fas fa-gift"></i> Voucher</a>
+        <a href="food/food.html"><i class="fas fa-pizza-slice"></i> Food</a>
+        <a href="user/user.html"><i class="fas fa-user"></i> User</a>
+    </nav>
+</aside>
+</html>
