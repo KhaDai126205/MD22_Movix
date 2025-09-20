@@ -15,159 +15,21 @@
       body {
         font-family: 'Inter', Arial, sans-serif;
         margin: 0;
-        background: linear-gradient(135deg, #fffbe6 0%, #ffe5ec 100%);
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         min-height: 100vh;
+        color: #eaeaea;
       }
+
       h1 {
-        color: #ff7043;
-        font-family: 'Pacifico', cursive;
+        color: #e040fb;
         text-align: center;
         margin-top: 32px;
-        letter-spacing: 2px;
-        font-size: 2.5rem;
-        text-shadow: 1px 2px 0 #fff3e0;
-      }
-      form {
-        margin: 32px auto 24px auto;
-        background: #fff;
-        padding: 28px 32px 20px 32px;
-        border-radius: 18px;
-        box-shadow: 0 4px 24px rgba(255, 112, 67, 0.08);
-        max-width: 600px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 18px 24px;
-        align-items: flex-end;
-      }
-      form label {
-        flex: 1 1 220px;
-        display: flex;
-        flex-direction: column;
-        font-weight: 600;
-        color: #ff7043;
-        font-size: 1rem;
-      }
-      form input[type='text'],
-      form input[type='number'],
-      form select,
-      form textarea {
-        border: 1.5px solid #ffd6c1;
-        border-radius: 8px;
-        padding: 7px 10px;
-        font-size: 1rem;
-        margin-top: 4px;
-        background: #fff8f3;
-        transition: border 0.2s;
-      }
-      form input[type='text']:focus,
-      form input[type='number']:focus,
-      form select:focus,
-      form textarea:focus {
-        border: 1.5px solid #ff7043;
-        outline: none;
-      }
-      form button {
-        background: linear-gradient(90deg, #ff7043 60%, #ffa726 100%);
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 24px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        margin-top: 8px;
-        box-shadow: 0 2px 8px rgba(255, 112, 67, 0.08);
-        transition: background 0.2s, transform 0.1s;
-      }
-      form button:hover {
-        background: linear-gradient(90deg, #ffa726 60%, #ff7043 100%);
-        transform: translateY(-2px) scale(1.04);
-      }
-      .preview-img {
-        width: 80px;
-        height: 80px;
-        object-fit: cover;
-        border-radius: 12px;
-        border: 2px solid #ffd6c1;
-        margin-top: 8px;
-        display: block;
-        background: #fff8f3;
-      }
-      table {
-        border-collapse: separate;
-        border-spacing: 0;
-        width: 98%;
-        margin: 0 auto 40px auto;
-        background: #fff;
-        border-radius: 18px;
-        overflow: hidden;
-        box-shadow: 0 4px 24px rgba(255, 112, 67, 0.08);
-      }
-      th,
-      td {
-        padding: 12px 10px;
-        text-align: center;
-      }
-      th {
-        background: #ff7043;
-        color: #fff;
-        font-size: 1.1rem;
-        font-weight: 600;
-        border-bottom: 3px solid #ffd6c1;
-      }
-      td {
-        background: #fff8f3;
-        color: #333;
-        font-size: 1rem;
-        vertical-align: middle;
-      }
-      tr:nth-child(even) td {
-        background: #fff3e0;
-      }
-      td img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 10px;
-        border: 2px solid #ffd6c1;
-        background: #fff;
-      }
-      .actions button {
-        background: #ffa726;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 7px 16px;
-        margin: 0 2px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s, transform 0.1s;
-      }
-      .actions button:hover {
-        background: #ff7043;
-        transform: scale(1.07);
-      }
-      .food-icon {
+        letter-spacing: 1px;
         font-size: 2.2rem;
-        color: #ffa726;
-        margin-right: 10px;
-        vertical-align: middle;
+        font-weight: 700;
+        text-shadow: 0 2px 6px rgba(224, 64, 251, 0.3);
       }
-      @media (max-width: 700px) {
-        form,
-        table {
-          max-width: 98vw;
-        }
-        form {
-          padding: 12px 6px;
-        }
-        th,
-        td {
-          font-size: 0.95rem;
-          padding: 7px 3px;
-        }
-      }
+
       /* Sidebar */
       .sidebar {
         position: fixed;
@@ -182,6 +44,154 @@
         flex-direction: column;
         box-shadow: 4px 0 15px rgba(0, 0, 0, 0.4);
         z-index: 999;
+      }
+
+      .main-content {
+        margin-left: 220px;
+        padding: 28px;
+        background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+        min-height: 100vh;
+      }
+
+      /* Form */
+      form {
+        margin: 32px auto 24px auto;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 28px 32px 20px 32px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        max-width: 700px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px 24px;
+        align-items: flex-end;
+      }
+
+      form label {
+        flex: 1 1 220px;
+        display: flex;
+        flex-direction: column;
+        font-weight: 600;
+        color: #eaeaea;
+        font-size: 0.95rem;
+      }
+
+      form input[type='text'],
+      form input[type='number'],
+      form select,
+      form textarea {
+        border: 1.5px solid #555;
+        border-radius: 8px;
+        padding: 7px 10px;
+        font-size: 1rem;
+        margin-top: 6px;
+        background: #222;
+        color: #fff;
+        transition: border 0.2s;
+      }
+
+      form input:focus,
+      form select:focus,
+      form textarea:focus {
+        border: 1.5px solid #9c27b0;
+        outline: none;
+      }
+
+      form button {
+        background: linear-gradient(90deg, #9c27b0 0%, #e040fb 100%);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 8px;
+        box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      form button:hover {
+        transform: translateY(-2px) scale(1.04);
+        box-shadow: 0 4px 14px rgba(224, 64, 251, 0.4);
+      }
+
+      /* Table */
+      table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 98%;
+        margin: 0 auto 40px auto;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      th,
+      td {
+        padding: 12px 10px;
+        text-align: center;
+      }
+
+      th {
+        background: linear-gradient(90deg, #9c27b0, #e040fb);
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 600;
+      }
+
+      td {
+        background: rgba(255, 255, 255, 0.02);
+        color: #ddd;
+        font-size: 0.95rem;
+      }
+
+      tr:nth-child(even) td {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      td img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 2px solid #9c27b0;
+        background: #111;
+      }
+
+      /* Table action buttons */
+      .actions button {
+        background: #9c27b0;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 7px 16px;
+        margin: 0 2px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+      }
+
+      .actions button:hover {
+        background: #e040fb;
+        transform: scale(1.07);
+      }
+
+      @media (max-width: 700px) {
+        form,
+        table {
+          max-width: 98vw;
+        }
+        form {
+          padding: 12px 6px;
+        }
+        th,
+        td {
+          font-size: 0.9rem;
+          padding: 7px 3px;
+        }
       }
     </style>
   </head>
@@ -214,175 +224,180 @@
         <a href="../user/user.html"><i class="fas fa-user"></i> User</a>
       </nav>
     </aside>
-    <h1><i class="fas fa-hamburger food-icon"></i>Quản lý Đồ Ăn</h1>
+    <!-- Nội dung chính -->
+    <div class="main-content">
+      <!-- Toàn bộ phần form, bảng, thống kê của bạn đặt trong đây -->
+      <h1><i class="fas fa-hamburger food-icon"></i> Quản lý Đồ Ăn</h1>
 
-    <!-- Thêm phần tóm tắt thống kê -->
-    <div
-      class="stats-container"
-      style="
-        max-width: 800px;
-        margin: 24px auto;
-        display: flex;
-        gap: 16px;
-        flex-wrap: wrap;
-      ">
+      <!-- stats + form + table + order table ... -->
+      <!-- Thêm phần tóm tắt thống kê -->
       <div
-        class="stat-card"
+        class="stats-container"
         style="
-          flex: 1;
-          min-width: 180px;
-          background: #fff;
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(255, 112, 67, 0.1);
-          text-align: center;
+          max-width: 800px;
+          margin: 24px auto;
+          display: flex;
+          gap: 16px;
+          flex-wrap: wrap;
         ">
-        <div style="font-size: 2rem; color: #ff7043; margin-bottom: 8px">
-          <i class="fas fa-shopping-cart"></i>
-        </div>
         <div
-          style="font-size: 1.8rem; font-weight: bold; color: #ff7043"
-          id="totalOrdersToday">
-          0
+          class="stat-card"
+          style="
+            flex: 1;
+            min-width: 180px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(255, 112, 67, 0.1);
+            text-align: center;
+          ">
+          <div style="font-size: 2rem; color: #ff7043; margin-bottom: 8px">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <div
+            style="font-size: 1.8rem; font-weight: bold; color: #ff7043"
+            id="totalOrdersToday">
+            0
+          </div>
+          <div style="color: #666; font-size: 0.9rem">Đơn hôm nay</div>
         </div>
-        <div style="color: #666; font-size: 0.9rem">Đơn hôm nay</div>
+
+        <div
+          class="stat-card"
+          style="
+            flex: 1;
+            min-width: 180px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(255, 112, 67, 0.1);
+            text-align: center;
+          ">
+          <div style="font-size: 2rem; color: #ffa726; margin-bottom: 8px">
+            <i class="fas fa-star"></i>
+          </div>
+          <div
+            style="font-size: 1.8rem; font-weight: bold; color: #ffa726"
+            id="popularFood">
+            -
+          </div>
+          <div style="color: #666; font-size: 0.9rem">Món phổ biến nhất</div>
+        </div>
+
+        <div
+          class="stat-card"
+          style="
+            flex: 1;
+            min-width: 180px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(255, 112, 67, 0.1);
+            text-align: center;
+          ">
+          <div style="font-size: 2rem; color: #43a047; margin-bottom: 8px">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div
+            style="font-size: 1.8rem; font-weight: bold; color: #43a047"
+            id="totalRevenue">
+            0₫
+          </div>
+          <div style="color: #666; font-size: 0.9rem">Doanh thu hôm nay</div>
+        </div>
       </div>
 
-      <div
-        class="stat-card"
-        style="
-          flex: 1;
-          min-width: 180px;
-          background: #fff;
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(255, 112, 67, 0.1);
-          text-align: center;
-        ">
-        <div style="font-size: 2rem; color: #ffa726; margin-bottom: 8px">
-          <i class="fas fa-star"></i>
-        </div>
-        <div
-          style="font-size: 1.8rem; font-weight: bold; color: #ffa726"
-          id="popularFood">
-          -
-        </div>
-        <div style="color: #666; font-size: 0.9rem">Món phổ biến nhất</div>
-      </div>
+      <form id="foodForm">
+        <input type="hidden" id="foodId" />
+        <label
+          >Tên món:
+          <input type="text" id="name" required placeholder="Tên món ăn..." />
+        </label>
+        <label
+          >Giá:
+          <input type="number" id="price" required placeholder="Giá (VNĐ)" />
+        </label>
+        <label
+          >Thể loại:
+          <input
+            type="text"
+            id="category"
+            required
+            placeholder="Ví dụ: Đồ uống, Ăn vặt..." />
+        </label>
+        <label
+          >Trạng thái:
+          <select id="status">
+            <option value="true">Còn bán</option>
+            <option value="false">Hết hàng</option>
+          </select>
+        </label>
+        <label
+          >Mô tả:
+          <textarea id="desc" rows="1" placeholder="Mô tả ngắn..."></textarea>
+        </label>
+        <label
+          >Ảnh:
+          <input type="file" id="image" accept="image/*" />
+          <img class="preview-img" id="previewImg" style="display: none" />
+        </label>
+        <button type="submit"><i class="fas fa-save"></i> Lưu</button>
+        <button type="button" onclick="resetForm()">
+          <i class="fas fa-times"></i> Hủy
+        </button>
+      </form>
+      <table>
+        <thead>
+          <tr>
+            <th>Ảnh</th>
+            <th>Tên</th>
+            <th>Giá</th>
+            <th>Thể loại</th>
+            <th>Trạng thái</th>
+            <th>Mô tả</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody id="foodTable"></tbody>
+      </table>
 
-      <div
-        class="stat-card"
-        style="
-          flex: 1;
-          min-width: 180px;
-          background: #fff;
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(255, 112, 67, 0.1);
-          text-align: center;
-        ">
-        <div style="font-size: 2rem; color: #43a047; margin-bottom: 8px">
-          <i class="fas fa-chart-line"></i>
-        </div>
-        <div
-          style="font-size: 1.8rem; font-weight: bold; color: #43a047"
-          id="totalRevenue">
-          0₫
-        </div>
-        <div style="color: #666; font-size: 0.9rem">Doanh thu hôm nay</div>
-      </div>
-    </div>
+      <!-- Bảng đơn đặt hàng đồ ăn -->
+      <h2 style="color: #ff7043; text-align: center; margin-top: 40px">
+        Đơn đặt hàng đồ ăn
+      </h2>
 
-    <form id="foodForm">
-      <input type="hidden" id="foodId" />
-      <label
-        >Tên món:
-        <input type="text" id="name" required placeholder="Tên món ăn..." />
-      </label>
-      <label
-        >Giá:
-        <input type="number" id="price" required placeholder="Giá (VNĐ)" />
-      </label>
-      <label
-        >Thể loại:
-        <input
-          type="text"
-          id="category"
-          required
-          placeholder="Ví dụ: Đồ uống, Ăn vặt..." />
-      </label>
-      <label
-        >Trạng thái:
-        <select id="status">
-          <option value="true">Còn bán</option>
-          <option value="false">Hết hàng</option>
+      <!-- Thêm ngay trên bảng đơn đặt hàng -->
+      <div style="text-align: center; margin: 24px 0 8px 0">
+        <label for="orderFilter" style="color: #ff7043; font-weight: bold"
+          >Xem đơn:
+        </label>
+        <select
+          id="orderFilter"
+          style="
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1.5px solid #ffd6c1;
+          ">
+          <option value="all">Tất cả</option>
+          <option value="today">Hôm nay</option>
+          <option value="future">Sắp diễn ra</option>
+          <option value="past">Đã xong</option>
         </select>
-      </label>
-      <label
-        >Mô tả:
-        <textarea id="desc" rows="1" placeholder="Mô tả ngắn..."></textarea>
-      </label>
-      <label
-        >Ảnh:
-        <input type="file" id="image" accept="image/*" />
-        <img class="preview-img" id="previewImg" style="display: none" />
-      </label>
-      <button type="submit"><i class="fas fa-save"></i> Lưu</button>
-      <button type="button" onclick="resetForm()">
-        <i class="fas fa-times"></i> Hủy
-      </button>
-    </form>
-    <table>
-      <thead>
-        <tr>
-          <th>Ảnh</th>
-          <th>Tên</th>
-          <th>Giá</th>
-          <th>Thể loại</th>
-          <th>Trạng thái</th>
-          <th>Mô tả</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody id="foodTable"></tbody>
-    </table>
+      </div>
 
-    <!-- Bảng đơn đặt hàng đồ ăn -->
-    <h2 style="color: #ff7043; text-align: center; margin-top: 40px">
-      Đơn đặt hàng đồ ăn
-    </h2>
-
-    <!-- Thêm ngay trên bảng đơn đặt hàng -->
-    <div style="text-align: center; margin: 24px 0 8px 0">
-      <label for="orderFilter" style="color: #ff7043; font-weight: bold"
-        >Xem đơn:
-      </label>
-      <select
-        id="orderFilter"
-        style="
-          padding: 6px 14px;
-          border-radius: 8px;
-          border: 1.5px solid #ffd6c1;
-        ">
-        <option value="all">Tất cả</option>
-        <option value="today">Hôm nay</option>
-        <option value="future">Sắp diễn ra</option>
-        <option value="past">Đã xong</option>
-      </select>
+      <table>
+        <thead>
+          <tr>
+            <th>Ảnh món</th>
+            <th>Tên món</th>
+            <th>Người đặt</th>
+            <th>Ngày đặt</th>
+            <th>Giờ chiếu</th>
+          </tr>
+        </thead>
+        <tbody id="orderTable"></tbody>
+      </table>
     </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Ảnh món</th>
-          <th>Tên món</th>
-          <th>Người đặt</th>
-          <th>Ngày đặt</th>
-          <th>Giờ chiếu</th>
-        </tr>
-      </thead>
-      <tbody id="orderTable"></tbody>
-    </table>
 
     <script>
       const api = 'https://688253a466a7eb81224e3f86.mockapi.io/doan/food';

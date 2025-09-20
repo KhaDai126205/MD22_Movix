@@ -238,3 +238,4 @@ filterAge.addEventListener('change', () => {
   currentPage = 1;
   applyFilters();
 });
+fetchFilms();

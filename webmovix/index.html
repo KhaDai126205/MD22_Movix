@@ -379,23 +379,6 @@
             </div>
           </div>
         </section>
-        <!-- Thống kê theo phim -->
-        <section class="film-stats-card">
-          <h2 class="card-title">📊 Thống kê theo phim</h2>
-          <div class="stats-search">
-            <input
-              type="text"
-              id="statsSearchInput"
-              placeholder="🔍 Nhập tên phim để xem thống kê..." />
-            <button onclick="showFilmStats()" class="btn-stats">
-              Xem thống kê
-            </button>
-          </div>
-
-          <div id="filmStatsResult" class="stats-result">
-            <p>Chưa có dữ liệu, hãy tìm phim để xem thống kê.</p>
-          </div>
-        </section>
       </main>
     </div>
 
@@ -409,6 +392,7 @@
       });
     </script>
     <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </body>
   <!-- Sidebar -->
   <aside class="sidebar">
