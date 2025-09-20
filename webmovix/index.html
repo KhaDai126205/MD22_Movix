@@ -379,6 +379,92 @@
             </div>
           </div>
         </section>
+
+        <!-- Movie Revenue Details Section -->
+        <section
+          class="movie-revenue-section"
+          data-aos="fade-up"
+          data-aos-delay="1000">
+          <div class="movie-revenue-content">
+            <!-- Bảng chi tiết doanh thu phim -->
+            <div class="table-container">
+              <div class="table-header">
+                <div class="table-title">
+                  <i class="fas fa-table"></i>
+                  <div>
+                    <h4>Bảng Chi Tiết Doanh Thu Phim</h4>
+                    <p>Số liệu từng phim</p>
+                  </div>
+                </div>
+
+                <!-- 🔍 Thanh tìm kiếm + lọc -->
+                <div class="table-filters">
+                  <input
+                    type="text"
+                    id="movieSearch"
+                    placeholder="Tìm theo tên phim..." />
+                  <select id="genreFilter">
+                    <option value="all">Tất cả thể loại</option>
+                    <option>Hành động</option>
+                    <option>Phiêu lưu</option>
+                    <option>Hài</option>
+                    <option>Tình cảm / Lãng mạn</option>
+                    <option>Tâm lý</option>
+                    <option>Kinh dị</option>
+                    <option>Giật gân</option>
+                    <option>Bí ẩn</option>
+                    <option>Khoa học viễn tưởng</option>
+                    <option>Viễn tưởng - Giả tưởng</option>
+                    <option>Hình sự</option>
+                    <option>Chiến tranh</option>
+                    <option>Chính kịch</option>
+                    <option>Tài liệu</option>
+                    <option>Phim tiểu sử</option>
+                    <option>Âm nhạc</option>
+                    <option>Gia đình</option>
+                    <option>Thể thao</option>
+                    <option>Phim thiếu nhi</option>
+                  </select>
+                </div>
+
+                <div class="table-actions">
+                  <button class="table-btn">
+                    <i class="fas fa-download"></i>
+                    Xuất Excel
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-content">
+                <div class="table-wrapper">
+                  <table id="movieRevenueTable">
+                    <thead>
+                      <tr>
+                        <th>STT</th>
+                        <th>Tên Phim</th>
+                        <th>Thể Loại</th>
+                        <th>Số Suất Chiếu</th>
+                        <th>Số Vé</th>
+                        <th>Doanh Thu</th>
+                        <th>Tỷ Trọng</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td colspan="7" class="loading-row">
+                          <div class="loading-skeleton"></div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- 📄 Thanh phân trang -->
+                <div id="pagination" class="pagination"></div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
 
@@ -392,7 +478,6 @@
       });
     </script>
     <script src="script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </body>
   <!-- Sidebar -->
   <aside class="sidebar">
