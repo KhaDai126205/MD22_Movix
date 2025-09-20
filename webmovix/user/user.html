@@ -192,7 +192,8 @@
       }
 
       .user-layout {
-        display: grid;
+        display: flex;
+        flex-direction: column;
         grid-template-columns: 1fr 1fr;
         gap: 30px;
         align-items: start;
@@ -210,6 +211,7 @@
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         position: relative;
         overflow: hidden;
+        width: 100%;
       }
 
       /* Cinema spotlight effect on cards */
@@ -651,10 +653,42 @@
         box-shadow: 4px 0 15px rgba(0, 0, 0, 0.4);
         z-index: 999;
       }
+      /* Nội dung chính */
+      .container {
+        margin-left: 240px; /* đẩy nội dung sang phải = width sidebar */
+        padding: 30px;
+        width: calc(100% - 240px);
+        box-sizing: border-box;
+        min-height: 100vh;
+      }
     </style>
   </head>
   <body>
     <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i class="fas fa-film"></i>
+        <span>Movix Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="../index.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="../phim/phim.html"><i class="fas fa-video"></i> Phim</a>
+        <a href="../suatchieu/index.html"
+          ><i class="fas fa-film"></i> Rạp chiếu</a
+        >
+        <a href="../tintuc/index.html"><i class="fas fa-users"></i> Tin tức</a>
+        <a href="../giaodien/giaodien.html"
+          ><i class="fas fa-building"></i> Giao diện</a
+        >
+        <a href="../giaodien/voucher.html"
+          ><i class="fas fa-gift"></i> Voucher</a
+        >
+        <a href="../food/food.html"><i class="fas fa-pizza-slice"></i> Food</a>
+        <a href="../user/user.html" class="active"
+          ><i class="fas fa-user"></i> User</a
+        >
+      </nav>
+    </aside>
     <!-- <aside class="sidebar">
       <div class="sidebar-logo">
         <i class="fas fa-film"></i>
@@ -711,6 +745,44 @@
 
       <!-- Main Content -->
       <div class="user-layout">
+        <!-- Nhân viên -->
+        <div class="user-card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fas fa-user-tie"></i>
+              Nhân viên
+            </div>
+            <button class="add-btn" onclick="openForm('2')">
+              <i class="fas fa-plus"></i>
+              Thêm mới
+            </button>
+          </div>
+
+          <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              id="searchStaff"
+              placeholder="Tìm kiếm nhân viên..." />
+          </div>
+
+          <div class="table-container">
+            <table id="staffTable">
+              <thead>
+                <tr>
+                  <th>Họ tên</th>
+                  <th>Email</th>
+                  <th>Giới tính</th>
+                  <th>Ngày sinh</th>
+                  <th>SĐT</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
         <!-- Khách hàng -->
         <div class="user-card">
           <div class="card-header">
@@ -740,45 +812,6 @@
                   <th>Họ tên</th>
                   <th>Email</th>
                   <th>Điểm</th>
-                  <th>Giới tính</th>
-                  <th>Ngày sinh</th>
-                  <th>SĐT</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Nhân viên -->
-        <div class="user-card">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fas fa-user-tie"></i>
-              Nhân viên
-            </div>
-            <button class="add-btn" onclick="openForm('2')">
-              <i class="fas fa-plus"></i>
-              Thêm mới
-            </button>
-          </div>
-
-          <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input
-              type="text"
-              class="search-input"
-              id="searchStaff"
-              placeholder="Tìm kiếm nhân viên..." />
-          </div>
-
-          <div class="table-container">
-            <table id="staffTable">
-              <thead>
-                <tr>
-                  <th>Họ tên</th>
-                  <th>Email</th>
                   <th>Giới tính</th>
                   <th>Ngày sinh</th>
                   <th>SĐT</th>
@@ -899,7 +932,8 @@
 
         document.getElementById('customerCount').textContent = customers.length;
         document.getElementById('staffCount').textContent = staffs.length;
-        document.getElementById('totalUsers').textContent = allUsers.length;
+        document.getElementById('totalUsers').textContent =
+          customers.length + staffs.length; // ✅ chính xác hơn
       }
 
       // Render both tables
