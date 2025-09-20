@@ -238,6 +238,3 @@ filterAge.addEventListener('change', () => {
   currentPage = 1;
   applyFilters();
 });
-
-// ================== INIT ==================
-fetchFilms();
