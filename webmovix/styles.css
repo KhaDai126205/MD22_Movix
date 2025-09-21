@@ -13,7 +13,7 @@
   --bg-tertiary: #16213e;
   --text-primary: #ffffff;
   --text-secondary: #a0a0a0;
-  --text-muted: #6b7280;
+  --text-muted: rgba(172, 180, 174, 0.974);
 
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -41,7 +41,7 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;
   background: var(--bg-primary);
-  color: var(--text-primary);
+  color: #333333;
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -207,7 +207,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   padding: 12px 16px;
   border-radius: var(--border-radius-md);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -221,7 +221,7 @@ body {
 .date-filter select {
   background: transparent;
   border: none;
-  color: var(--text-primary);
+  color: #333333;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -231,7 +231,7 @@ body {
 
 .date-filter select option {
   background: var(--bg-secondary);
-  color: var(--text-primary);
+  color: #333333;
 }
 
 .refresh-btn {
@@ -362,7 +362,7 @@ body {
 .stat-value {
   font-size: 32px;
   font-weight: 800;
-  color: var(--text-primary);
+  color: #ffffff;
   margin-bottom: 16px;
   line-height: 1;
 }
@@ -498,7 +498,7 @@ body {
 .chart-title h3 {
   font-size: 20px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ffffff;
   margin-bottom: 4px;
 }
 
@@ -514,7 +514,7 @@ body {
 
 .chart-btn {
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-sm);
   color: var(--text-secondary);
@@ -615,7 +615,7 @@ body {
 }
 
 .movie-stats::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border-radius: 2px;
 }
 
@@ -630,7 +630,7 @@ body {
   align-items: center;
   padding: 16px;
   margin-bottom: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-md);
   transition: var(--transition-normal);
@@ -638,13 +638,12 @@ body {
 }
 
 .movie-item:hover {
-  background: rgba(255, 255, 255, 0.1);
   transform: translateX(4px);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
 .movie-info h4 {
-  color: var(--text-primary);
+  color: #333333;
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 4px;
@@ -700,6 +699,7 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+  color: #ffffff;
 }
 
 .table-icon {
@@ -717,7 +717,7 @@ body {
 .table-title h3 {
   font-size: 20px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ffffff;
   margin-bottom: 4px;
 }
 
@@ -733,7 +733,7 @@ body {
 
 .table-btn {
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-sm);
   color: var(--text-secondary);
@@ -762,7 +762,7 @@ body {
 }
 
 .table-wrapper::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border-radius: 2px;
 }
 
@@ -782,10 +782,11 @@ td {
   padding: 16px;
   text-align: left;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #333333;
 }
 
 th {
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -794,7 +795,7 @@ th {
 }
 
 tr:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
 }
 
 .rank {
@@ -805,7 +806,7 @@ tr:hover {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  color: white;
+  color: rgb(52, 217, 229);
   margin: 0 auto;
   box-shadow: var(--shadow-sm);
 }
@@ -911,7 +912,7 @@ tr:hover {
 .recent-title h3 {
   font-size: 20px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ffffff;
   margin-bottom: 4px;
 }
 
@@ -927,7 +928,7 @@ tr:hover {
 
 .recent-btn {
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-sm);
   color: var(--text-secondary);
@@ -952,7 +953,7 @@ tr:hover {
   justify-content: space-between;
   padding: 16px;
   margin-bottom: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-md);
   transition: var(--transition-normal);
@@ -960,7 +961,6 @@ tr:hover {
 }
 
 .transaction-item:hover {
-  background: rgba(255, 255, 255, 0.1);
   transform: translateX(4px);
   border-color: rgba(255, 255, 255, 0.2);
 }
@@ -986,7 +986,7 @@ tr:hover {
 }
 
 .transaction-details h4 {
-  color: var(--text-primary);
+  color: #333333;
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 4px;
@@ -1014,7 +1014,7 @@ tr:hover {
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border-radius: var(--border-radius-md);
 }
 
@@ -1413,7 +1413,7 @@ tr:hover {
 }
 
 .movie-revenue-section tbody tr:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
 }
 
 .movie-revenue-section tbody td {
@@ -1505,7 +1505,7 @@ tr:hover {
 }
 
 .showtime-revenue-content {
-  background: rgba(255, 255, 255, 0.05);
+  background: #1E1E2D1E1E2D;
   border-radius: var(--border-radius-lg);
   padding: 30px;
   backdrop-filter: blur(10px);
@@ -1526,8 +1526,8 @@ tr:hover {
   padding: 10px 15px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--border-radius-sm);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
+  background: #ffffff;
+  color: #333333;
   font-size: 14px;
   transition: var(--transition-normal);
 }
@@ -1591,7 +1591,7 @@ tr:hover {
 /* Table Hover Effects */
 #showtimeRevenueTable tbody tr:hover,
 #movieRevenueTable tbody tr:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   transform: translateY(-1px);
   transition: var(--transition-fast);
 }
