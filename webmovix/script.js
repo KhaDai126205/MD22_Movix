@@ -783,6 +783,13 @@ function getMovieRevenueStats() {
       0,
     );
 
+    // ✅ bổ sung tính toán
+    const revenuePerShow = shows > 0 ? revenue / shows : 0;
+    const avgTicketPrice = ticketsCount > 0 ? revenue / ticketsCount : 0;
+    const capacity = shows * 30; // mỗi suất 30 ghế
+    const fillRate =
+      capacity > 0 ? ((ticketsCount / capacity) * 100).toFixed(2) + '%' : 'N/A';
+
     totalRevenue += revenue;
 
     return {
@@ -791,6 +798,9 @@ function getMovieRevenueStats() {
       shows,
       tickets: ticketsCount,
       revenue,
+      revenuePerShow,
+      avgTicketPrice,
+      fillRate,
     };
   });
 
@@ -806,6 +816,7 @@ function getMovieRevenueStats() {
     .sort((a, b) => b.revenue - a.revenue);
 }
 
+// Render bảng chi tiết (có STT, tìm kiếm, lọc)
 // Render bảng chi tiết (có STT, tìm kiếm, lọc)
 function renderMovieRevenueTable() {
   const tbody = document.querySelector('#movieRevenueTable tbody');
@@ -833,13 +844,13 @@ function renderMovieRevenueTable() {
 
   if (data.length === 0) {
     tbody.innerHTML = `
-      <tr><td colspan="7" style="text-align:center; padding:15px; color:#777;">
+      <tr><td colspan="10" style="text-align:center; padding:15px; color:#777;">
         Không có dữ liệu
       </td></tr>`;
     return;
   }
 
-  // Render dữ liệu
+  // Render dữ liệu từng phim
   data.forEach((m, index) => {
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -850,9 +861,39 @@ function renderMovieRevenueTable() {
       <td>${m.tickets}</td>
       <td>${formatCurrency(m.revenue)}</td>
       <td>${m.share}%</td>
+      <td>${formatCurrency(m.revenuePerShow)}</td>
+      <td>${formatCurrency(m.avgTicketPrice)}</td>
+      <td>${m.fillRate}</td>
     `;
     tbody.appendChild(row);
   });
+
+  // ✅ Tính tổng cộng
+  const totalShows = data.reduce((sum, m) => sum + m.shows, 0);
+  const totalTickets = data.reduce((sum, m) => sum + m.tickets, 0);
+  const totalRevenue = data.reduce((sum, m) => sum + m.revenue, 0);
+  const totalCapacity = totalShows * 30;
+  const avgRevenuePerShow = totalShows > 0 ? totalRevenue / totalShows : 0;
+  const avgTicketPrice = totalTickets > 0 ? totalRevenue / totalTickets : 0;
+  const fillRate =
+    totalCapacity > 0
+      ? ((totalTickets / totalCapacity) * 100).toFixed(2) + '%'
+      : 'N/A';
+
+  // Render dòng tổng cộng
+  const totalRow = document.createElement('tr');
+  totalRow.style.fontWeight = 'bold';
+  totalRow.innerHTML = `
+    <td colspan="3" style="text-align:center;">Tổng cộng</td>
+    <td>${totalShows}</td>
+    <td>${totalTickets}</td>
+    <td>${formatCurrency(totalRevenue)}</td>
+    <td>100%</td>
+    <td>${formatCurrency(avgRevenuePerShow)}</td>
+    <td>${formatCurrency(avgTicketPrice)}</td>
+    <td>${fillRate}</td>
+  `;
+  tbody.appendChild(totalRow);
 }
 
 // Hàm chính gọi khi load dashboard
