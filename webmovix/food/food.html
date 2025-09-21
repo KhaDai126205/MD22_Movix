@@ -193,6 +193,62 @@
           padding: 7px 3px;
         }
       }
+      /* Bộ lọc + tìm kiếm */
+      .order-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px auto;
+        max-width: 900px;
+        gap: 12px;
+      }
+
+      .order-filter label {
+        color: #ff7043;
+        font-weight: bold;
+        margin-right: 8px;
+      }
+
+      .order-filter select {
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: 1.5px solid #ffd6c1;
+        background: #2c2541;
+        color: #ffd6c1;
+      }
+
+      .order-search {
+        display: flex;
+        gap: 8px;
+      }
+
+      .order-search input {
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: 1.5px solid #ffd6c1;
+        background: #2c2541;
+        color: #ffd6c1;
+        width: 260px;
+      }
+
+      .order-search input::placeholder {
+        color: #ffd6c199;
+      }
+
+      .order-search button {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(90deg, #ff7043 0%, #ff9e43 100%);
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .order-search button:hover {
+        background: linear-gradient(90deg, #ff9e43 0%, #ff7043 100%);
+      }
     </style>
   </head>
   <body>
@@ -366,23 +422,25 @@
         Đơn đặt hàng đồ ăn
       </h2>
 
-      <!-- Thêm ngay trên bảng đơn đặt hàng -->
-      <div style="text-align: center; margin: 24px 0 8px 0">
-        <label for="orderFilter" style="color: #ff7043; font-weight: bold"
-          >Xem đơn:
-        </label>
-        <select
-          id="orderFilter"
-          style="
-            padding: 6px 14px;
-            border-radius: 8px;
-            border: 1.5px solid #ffd6c1;
-          ">
-          <option value="all">Tất cả</option>
-          <option value="today">Hôm nay</option>
-          <option value="future">Sắp diễn ra</option>
-          <option value="past">Đã xong</option>
-        </select>
+      <!-- Thanh tìm kiếm + lọc -->
+      <div class="order-controls">
+        <div class="order-filter">
+          <label for="orderFilter">Xem đơn:</label>
+          <select id="orderFilter">
+            <option value="all">Tất cả</option>
+            <option value="today">Hôm nay</option>
+            <option value="future">Sắp diễn ra</option>
+            <option value="past">Đã xong</option>
+          </select>
+        </div>
+
+        <div class="order-search">
+          <input
+            type="text"
+            id="orderSearch"
+            placeholder="🔍 Tìm theo tên món hoặc người đặt..." />
+          <button id="resetSearch">Làm mới</button>
+        </div>
       </div>
 
       <table>
@@ -407,6 +465,8 @@
       const foodForm = document.getElementById('foodForm');
       const imageInput = document.getElementById('image');
       const previewImg = document.getElementById('previewImg');
+      const searchInput = document.getElementById('orderSearch');
+
       let foods = [];
       let customers = [];
       let imageUrl = '';
@@ -419,7 +479,6 @@
         previewImg.style.display = 'block';
         previewImg.src = URL.createObjectURL(file);
 
-        // Upload lên imgbb
         const reader = new FileReader();
         reader.onloadend = async () => {
           const base64Image = reader.result.split(',')[1];
@@ -452,46 +511,54 @@
         foodTable.innerHTML = foods
           .map(
             f => `
-        <tr>
-            <td><img src="${f.image}" alt="food"></td>
-            <td>${f.name}</td>
-            <td>${f.price.toLocaleString()} <span style="color:#ffa726;font-size:1.1em;">₫</span></td>
-            <td>${f.category}</td>
-            <td>
-                ${
-                  f.status
-                    ? '<span style="color:#43a047;font-weight:600;"><i class="fas fa-check-circle"></i> Còn bán</span>'
-                    : '<span style="color:#e53935;font-weight:600;"><i class="fas fa-times-circle"></i> Hết hàng</span>'
-                }
-            </td>
-            <td>${f.desc}</td>
-            <td class="actions">
-                <button onclick="editFood('${
-                  f.id
-                }')"><i class="fas fa-edit"></i> Sửa</button>
-                <button onclick="deleteFood('${
-                  f.id
-                }')"><i class="fas fa-trash"></i> Xóa</button>
-            </td>
-        </tr>
-    `,
+      <tr>
+          <td><img src="${f.image}" alt="food"></td>
+          <td>${f.name}</td>
+          <td>${f.price.toLocaleString()} <span style="color:#ffa726;font-size:1.1em;">₫</span></td>
+          <td>${f.category}</td>
+          <td>
+              ${
+                f.status
+                  ? '<span style="color:#43a047;font-weight:600;"><i class="fas fa-check-circle"></i> Còn bán</span>'
+                  : '<span style="color:#e53935;font-weight:600;"><i class="fas fa-times-circle"></i> Hết hàng</span>'
+              }
+          </td>
+          <td>${f.desc}</td>
+          <td class="actions">
+              <button onclick="editFood('${
+                f.id
+              }')"><i class="fas fa-edit"></i> Sửa</button>
+              <button onclick="deleteFood('${
+                f.id
+              }')"><i class="fas fa-trash"></i> Xóa</button>
+          </td>
+      </tr>
+  `,
           )
           .join('');
       }
 
-      // Lấy danh sách khách hàng
       async function fetchCustomers() {
         const res = await fetch(customerApi);
         customers = await res.json();
       }
 
-      // Lấy tên khách hàng từ id
       function getCustomerNameById(id) {
-        // Tìm theo khach_hang_id thay vì id
         const customer = customers.find(
           c => c.khach_hang_id == id || c.id == id,
         );
         return customer ? customer.ho_ten : 'Ẩn danh';
+      }
+
+      // Hàm loại bỏ dấu tiếng Việt để tìm kiếm nhạy bén
+      function removeVietnameseTones(str) {
+        return str
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '') // xóa dấu
+          .replace(/đ/g, 'd')
+          .replace(/Đ/g, 'D')
+          .toLowerCase()
+          .trim();
       }
 
       // Hiển thị bảng đơn đặt hàng
@@ -500,6 +567,10 @@
         const filter = document.getElementById('orderFilter')
           ? document.getElementById('orderFilter').value
           : 'all';
+        const keyword = searchInput
+          ? removeVietnameseTones(searchInput.value)
+          : '';
+
         let rows = [];
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -517,41 +588,69 @@
               else if (orderDate < today) type = 'past';
               else type = 'future';
 
-              if (filter === 'all' || filter === type) {
+              const customerName = getCustomerNameById(order.id);
+              const foodName = f.name;
+
+              // Chuẩn hóa để so sánh
+              const matchesSearch =
+                !keyword ||
+                removeVietnameseTones(foodName).includes(keyword) ||
+                removeVietnameseTones(customerName).includes(keyword);
+
+              if ((filter === 'all' || filter === type) && matchesSearch) {
                 rows.push(`
-                        <tr>
-                            <td><img src="${
-                              f.image
-                            }" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:8px;"></td>
-                            <td>${f.name}</td>
-                            <td>${getCustomerNameById(order.id)}</td>
-                            <td>${order.ngay_dat || ''}</td>
-                            <td>${order.gio_chieu || ''}h</td>
-                        </tr>
-                    `);
+            <tr>
+              <td><img src="${
+                f.image
+              }" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:8px;"></td>
+              <td>${foodName}</td>
+              <td>${customerName}</td>
+              <td>${order.ngay_dat || ''}</td>
+              <td>${order.gio_chieu || ''}h</td>
+            </tr>
+          `);
               }
             });
           }
         });
+
         orderTable.innerHTML = rows.length
           ? rows.join('')
           : `<tr><td colspan="5" style="color:#bbb;">Không có đơn phù hợp</td></tr>`;
       }
 
-      // Sửa lại fetchFoods để lấy cả khách hàng và render bảng đơn hàng
+      // Gõ realtime + nút reset
+      if (searchInput && !searchInput.hasListener) {
+        searchInput.addEventListener('input', renderOrderTable);
+        searchInput.hasListener = true;
+      }
+
+      const resetBtn = document.getElementById('resetSearch');
+      if (resetBtn && !resetBtn.hasListener) {
+        resetBtn.addEventListener('click', () => {
+          searchInput.value = '';
+          renderOrderTable();
+        });
+        resetBtn.hasListener = true;
+      }
+
       async function fetchFoods() {
         await fetchCustomers();
         const res = await fetch(api);
         foods = await res.json();
         renderTable();
         renderOrderTable();
-        calculateTodayStats(); // Thêm dòng này
+        calculateTodayStats();
 
-        // Gắn sự kiện filter (chỉ gắn 1 lần)
         const filter = document.getElementById('orderFilter');
         if (filter && !filter.hasListener) {
           filter.addEventListener('change', renderOrderTable);
           filter.hasListener = true;
+        }
+
+        if (searchInput && !searchInput.hasListener) {
+          searchInput.addEventListener('input', renderOrderTable);
+          searchInput.hasListener = true;
         }
       }
 
@@ -564,7 +663,6 @@
         const status = document.getElementById('status').value === 'true';
         const desc = document.getElementById('desc').value;
 
-        // Nếu đang sửa mà không chọn ảnh mới, giữ ảnh cũ
         let finalImage = imageUrl;
         if (!finalImage && id) {
           finalImage = foods.find(f => f.id === id)?.image || '';
@@ -629,7 +727,6 @@
         imageUrl = '';
       }
 
-      // Thêm hàm tính toán thống kê
       function calculateTodayStats() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -646,12 +743,10 @@
               let orderDate = new Date(`${y}-${m}-${d}`);
               orderDate.setHours(0, 0, 0, 0);
 
-              // Chỉ tính đơn hôm nay
               if (orderDate.getTime() === today.getTime()) {
                 totalOrders++;
                 totalRevenue += parseInt(f.price) || 0;
 
-                // Đếm số lần đặt mỗi món
                 if (foodCounts[f.name]) {
                   foodCounts[f.name]++;
                 } else {
@@ -662,7 +757,6 @@
           }
         });
 
-        // Tìm món phổ biến nhất
         let popularFood = '-';
         let maxCount = 0;
         for (const [foodName, count] of Object.entries(foodCounts)) {
@@ -672,7 +766,6 @@
           }
         }
 
-        // Cập nhật UI
         document.getElementById('totalOrdersToday').textContent = totalOrders;
         document.getElementById('popularFood').textContent = popularFood;
         document.getElementById('totalRevenue').textContent =
@@ -680,9 +773,6 @@
       }
 
       fetchFoods();
-      document
-        .getElementById('orderFilter')
-        .addEventListener('change', renderOrderTable);
     </script>
   </body>
 </html>

@@ -53,6 +53,11 @@ form input::placeholder,
 form textarea::placeholder {
   color: #ffd93d99;
 }
+form textarea {
+  min-height: 120px; /* đảm bảo có đủ chỗ để gõ nhiều dòng */
+  resize: vertical; /* cho phép kéo thả chỉnh chiều cao */
+  line-height: 1.5; /* dễ đọc hơn khi nhiều chữ */
+}
 
 form button {
   background: linear-gradient(90deg, #ffd93d 60%, #ff6d28 100%);
