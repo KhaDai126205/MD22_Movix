@@ -478,6 +478,7 @@
           <tr>
             <th>Ảnh món</th>
             <th>Tên món</th>
+            <th>Số lượng</th>
             <th>Người đặt</th>
             <th>Ngày đặt</th>
             <th>Giờ chiếu</th>
@@ -623,6 +624,7 @@
 
               const customerName = getCustomerNameById(order.id);
               const foodName = f.name;
+              const qty = order.so_luong || order.quantity || order.qty || 1;
 
               // Chuẩn hóa để so sánh
               const matchesSearch =
@@ -637,6 +639,7 @@
                 f.image
               }" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:8px;"></td>
               <td>${foodName}</td>
+              <td>${qty}</td>
               <td>${customerName}</td>
               <td>${order.ngay_dat || ''}</td>
               <td>${order.gio_chieu || ''}h</td>
@@ -654,7 +657,7 @@
 
         orderTable.innerHTML = pageRows.length
           ? pageRows.join('')
-          : `<tr><td colspan="5" style="color:#bbb;">Không có đơn phù hợp</td></tr>`;
+          : `<tr><td colspan="6" style="color:#bbb;">Không có đơn phù hợp</td></tr>`;
         renderOrderPagination(totalPages, rows.length, start);
       }
 

@@ -47,6 +47,33 @@ let allFilms = [];
 let currentPage = 1;
 const filmsPerPage = 5;
 
+function showToast(message, type = 'success') {
+  const div = document.createElement('div');
+  div.textContent = message;
+  div.style.position = 'fixed';
+  div.style.top = '16px';
+  div.style.left = '50%';
+  div.style.transform = 'translateX(-50%)';
+  div.style.padding = '10px 16px';
+  div.style.borderRadius = '8px';
+  div.style.zIndex = '9999';
+  div.style.fontWeight = '600';
+  div.style.boxShadow = '0 6px 16px rgba(0,0,0,.25)';
+  if (type === 'success') {
+    div.style.background = '#22c55e';
+    div.style.color = '#fff';
+  } else {
+    div.style.background = '#ef4444';
+    div.style.color = '#fff';
+  }
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 2200);
+}
+
+function normalizeName(str) {
+  return (str || '').trim().toLowerCase();
+}
+
 // ================== FETCH DATA ==================
 async function fetchFilms() {
   const res = await fetch(API_URL);
@@ -168,31 +195,74 @@ function renderPagination(totalFilms) {
 filmForm.onsubmit = async function (e) {
   e.preventDefault();
   const phim_id = document.getElementById('phim_id').value;
+  const ten_phim_val = document.getElementById('ten_phim').value;
+  const dao_dien_val = document.getElementById('dao_dien').value;
+  const ngon_ngu_val = document.getElementById('ngon_ngu').value;
+  const do_tuoi_val = document.getElementById('do_tuoi').value;
+  const mo_ta_val = document.getElementById('mo_ta').value;
+  const thoi_luong_val = document.getElementById('thoi_luong').value;
+  const poster_url_val = document.getElementById('poster_url').value;
+  const trailer_url_val = document.getElementById('trailer_url').value;
+  const the_loai_val = document.getElementById('the_loai').value;
+
+  // Validate bắt buộc
+  const missing = [];
+  if (!ten_phim_val.trim()) missing.push('Tên phim');
+  if (!dao_dien_val.trim()) missing.push('Đạo diễn');
+  if (!ngon_ngu_val.trim()) missing.push('Ngôn ngữ');
+  if (!mo_ta_val.trim()) missing.push('Mô tả');
+  if (!poster_url_val.trim()) missing.push('Poster URL');
+  if (!trailer_url_val.trim()) missing.push('Trailer URL');
+  if (!the_loai_val.trim()) missing.push('Thể loại');
+  const doTuoiNum = Number(do_tuoi_val);
+  const thoiLuongNum = Number(thoi_luong_val);
+  if (!Number.isFinite(doTuoiNum) || doTuoiNum <= 0) missing.push('Độ tuổi (>0)');
+  if (!Number.isFinite(thoiLuongNum) || thoiLuongNum <= 0) missing.push('Thời lượng (>0)');
+  if (missing.length) {
+    showToast(`❌ Vui lòng nhập đầy đủ: ${missing.join(', ')}`, 'error');
+    return;
+  }
+
+  // Không tạo/sửa trùng tên (không phân biệt hoa thường, khoảng trắng)
+  const newName = normalizeName(ten_phim_val);
+  const duplicated = allFilms.some(f => normalizeName(f.ten_phim) === newName && String(f.phim_id) !== String(phim_id || ''));
+  if (duplicated) {
+    showToast('❌ Tên phim đã tồn tại, vui lòng chọn tên khác!', 'error');
+    return;
+  }
+
   const filmData = {
-    ten_phim: document.getElementById('ten_phim').value,
-    dao_dien: document.getElementById('dao_dien').value,
-    ngon_ngu: document.getElementById('ngon_ngu').value,
-    do_tuoi: Number(document.getElementById('do_tuoi').value),
-    mo_ta: document.getElementById('mo_ta').value,
-    thoi_luong: Number(document.getElementById('thoi_luong').value),
-    poster_url: document.getElementById('poster_url').value,
-    trailer_url: document.getElementById('trailer_url').value,
-    the_loai: document.getElementById('the_loai').value,
+    ten_phim: ten_phim_val.trim(),
+    dao_dien: dao_dien_val.trim(),
+    ngon_ngu: ngon_ngu_val.trim(),
+    do_tuoi: doTuoiNum,
+    mo_ta: mo_ta_val.trim(),
+    thoi_luong: thoiLuongNum,
+    poster_url: poster_url_val.trim(),
+    trailer_url: trailer_url_val.trim(),
+    the_loai: the_loai_val.trim(),
     phim_id: phim_id,
   };
 
-  if (phim_id) {
-    await fetch(`${API_URL}/${phim_id}`, {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(filmData),
-    });
-  } else {
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(filmData),
-    });
+  try {
+    if (phim_id) {
+      await fetch(`${API_URL}/${phim_id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(filmData),
+      });
+      showToast('✅ Cập nhật phim thành công!');
+    } else {
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(filmData),
+      });
+      showToast('✅ Tạo phim thành công!');
+    }
+  } catch (err) {
+    showToast('❌ Lỗi lưu phim. Vui lòng thử lại!', 'error');
+    return;
   }
 
   filmForm.reset();

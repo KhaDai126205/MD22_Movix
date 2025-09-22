@@ -1247,17 +1247,24 @@ function buildTransactionsFromExistingData() {
         const orders = Array.isArray(f.khach_hang_id) ? f.khach_hang_id : [];
         return orders
           .filter(o => String(o.id) === String(customerId) && (!paidDate || String(o.ngay_dat) === String(paidDate)))
-          .map(o => ({
-            ten_mon: f.name || f.ten_mon || f.ten || 'Món',
-            gia: Number.parseFloat(f.price) || 0,
-            anh: f.image || '',
-            ngay_dat: o.ngay_dat || '',
-            gio_chieu: o.gio_chieu || '',
-          }));
+          .map(o => {
+            const unitPrice = Number.parseFloat(f.price) || 0;
+            const qty = Number(o.so_luong || o.quantity || o.qty || 1);
+            return {
+              ten_mon: f.name || f.ten_mon || f.ten || 'Món',
+              gia: unitPrice,
+              so_luong: qty,
+              thanh_tien: unitPrice * qty,
+              anh: f.image || '',
+              ngay_dat: o.ngay_dat || '',
+              gio_chieu: o.gio_chieu || '',
+            };
+          });
       });
       if (foodsOrdered.length > 0) {
         tx.foods = foodsOrdered;
-        tx.food_total = foodsOrdered.reduce((s, it) => s + (it.gia || 0), 0);
+        tx.food_total = foodsOrdered.reduce((s, it) => s + (it.thanh_tien || (it.gia || 0)), 0);
+        tx.food_count = foodsOrdered.reduce((s, it) => s + (it.so_luong || 1), 0);
       }
       tx._foodsAdded = true;
     }
@@ -1430,23 +1437,23 @@ function openTransactionModal(maGD) {
     </div>
     ${tx.foods && tx.foods.length > 0 ? `
     <div class="ve-details" style="margin-top:16px;">
-      <h4>Đồ ăn đã đặt (${tx.foods.length} món):</h4>
+      <h4>Đồ ăn đã đặt (${tx.food_count || tx.foods.length} món):</h4>
       <div class="ve-list">
         ${tx.foods
           .map(
             f => `
           <div class="ve-item">
             <div>
-              <div class="ve-movie">${f.ten_mon}</div>
+              <div class="ve-movie">${f.ten_mon} x ${f.so_luong || 1}</div>
               <div class="ve-details-text">${f.ngay_dat || ''} ${f.gio_chieu ? '- ' + f.gio_chieu + 'h' : ''}</div>
             </div>
-            <div class="ve-price">${formatCurrency(f.gia)}</div>
+            <div class="ve-price">${formatCurrency(f.gia)}${(f.so_luong && f.so_luong > 1) ? ` × ${f.so_luong} = <strong>${formatCurrency(f.thanh_tien || (f.gia * f.so_luong))}</strong>` : ''}</div>
           </div>
         `,
           )
           .join('')}
       </div>
-      <div style="text-align:right;margin-top:8px;font-weight:700;color:#10b981;">Tổng đồ ăn: ${formatCurrency(tx.food_total)}</div>
+      <div style="text-align:right;margin-top:8px;font-weight:700;color:#10b981;">Tổng đồ ăn: ${formatCurrency(tx.food_total || 0)}</div>
     </div>` : ''}
   `;
   document.getElementById('transactionModal').style.display = 'block';
