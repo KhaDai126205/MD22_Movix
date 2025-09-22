@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Setup event listeners cho movie revenue table
   setupMovieRevenueFilters();
-  
+
   // Setup event listeners cho showtime revenue table
   setupShowtimeRevenueFilters();
 });
@@ -97,7 +97,16 @@ async function loadAllData() {
     // Process results
     let successCount = 0;
     results.forEach((result, index) => {
-      const keys = ['cinemas', 'customers', 'movies', 'tickets', 'payments', 'showtimes', 'rooms', 'seats'];
+      const keys = [
+        'cinemas',
+        'customers',
+        'movies',
+        'tickets',
+        'payments',
+        'showtimes',
+        'rooms',
+        'seats',
+      ];
       const key = keys[index];
 
       if (result.status === 'fulfilled') {
@@ -110,7 +119,9 @@ async function loadAllData() {
       }
     });
 
-    console.log(`📊 Loaded ${successCount}/${apiCalls.length} APIs successfully`);
+    console.log(
+      `📊 Loaded ${successCount}/${apiCalls.length} APIs successfully`,
+    );
     console.log('Final data:', dashboardData);
 
     // Update dashboard with loaded data
@@ -763,15 +774,16 @@ function getMovieRevenueStats() {
     );
 
     // Lọc thanh toán khớp với vé (chỉ thanh toán thành công)
-    const moviePayments = payments.filter(p =>
-      movieTickets.some(t => t.ve_id === p.ve_id) && 
-      (p.trang_thai === 'Đã thanh toán' || !p.trang_thai)
+    const moviePayments = payments.filter(
+      p =>
+        movieTickets.some(t => t.ve_id === p.ve_id) &&
+        (p.trang_thai === 'Đã thanh toán' || !p.trang_thai),
     );
 
     // Tính số suất chiếu duy nhất
     const uniqueShowtimes = new Set(movieTickets.map(t => t.suat_chieu_id));
     const shows = uniqueShowtimes.size;
-    
+
     const ticketsCount = movieTickets.length;
     const revenue = moviePayments.reduce(
       (sum, p) => sum + (Number.parseFloat(p.so_tien) || 0),
@@ -782,10 +794,15 @@ function getMovieRevenueStats() {
     let totalCapacity = 0;
     uniqueShowtimes.forEach(showtimeId => {
       // Tìm rạp cho suất chiếu này
-      const ticketForShowtime = movieTickets.find(t => t.suat_chieu_id === showtimeId);
+      const ticketForShowtime = movieTickets.find(
+        t => t.suat_chieu_id === showtimeId,
+      );
       if (ticketForShowtime) {
-        const cinema = cinemas.find(c => c.id === ticketForShowtime.rap_id || 
-                                        c.ten_rap === ticketForShowtime.dia_chi_rap);
+        const cinema = cinemas.find(
+          c =>
+            c.id === ticketForShowtime.rap_id ||
+            c.ten_rap === ticketForShowtime.dia_chi_rap,
+        );
         const seatsInCinema = cinema?.so_ghe || 30; // Default 30 nếu không có thông tin
         totalCapacity += seatsInCinema;
       } else {
@@ -796,8 +813,10 @@ function getMovieRevenueStats() {
     // Tính các chỉ số
     const revenuePerShow = shows > 0 ? revenue / shows : 0;
     const avgTicketPrice = ticketsCount > 0 ? revenue / ticketsCount : 0;
-    const fillRate = totalCapacity > 0 ? 
-      ((ticketsCount / totalCapacity) * 100).toFixed(2) + '%' : 'N/A';
+    const fillRate =
+      totalCapacity > 0
+        ? ((ticketsCount / totalCapacity) * 100).toFixed(2) + '%'
+        : 'N/A';
 
     totalRevenue += revenue;
 
@@ -868,7 +887,9 @@ function renderMovieRevenueTable() {
       <td><span class="genre-tag">${m.genre}</span></td>
       <td>${m.shows}</td>
       <td>${m.tickets}</td>
-      <td><strong class="revenue-text">${formatCurrency(m.revenue)}</strong></td>
+      <td><strong class="revenue-text">${formatCurrency(
+        m.revenue,
+      )}</strong></td>
       <td>${m.share}%</td>
       <td>${formatCurrency(m.revenuePerShow)}</td>
       <td>${formatCurrency(m.avgTicketPrice)}</td>
@@ -897,7 +918,9 @@ function renderMovieRevenueTable() {
     <td colspan="3" style="text-align:center;">📊 TỔNG CỘNG</td>
     <td>${totalShows}</td>
     <td>${totalTickets}</td>
-    <td><strong class="revenue-text">${formatCurrency(totalRevenue)}</strong></td>
+    <td><strong class="revenue-text">${formatCurrency(
+      totalRevenue,
+    )}</strong></td>
     <td>100%</td>
     <td>${formatCurrency(avgRevenuePerShow)}</td>
     <td>${formatCurrency(avgTicketPrice)}</td>
@@ -920,19 +943,23 @@ function getShowtimeRevenueStats() {
 
   tickets.forEach(ticket => {
     const payment = payments.find(p => p.ve_id === ticket.ve_id);
-    if (!payment || (payment.trang_thai && payment.trang_thai !== 'Đã thanh toán')) return;
+    if (
+      !payment ||
+      (payment.trang_thai && payment.trang_thai !== 'Đã thanh toán')
+    )
+      return;
 
     const showtimeId = ticket.suat_chieu_id;
-    const cinema = cinemas.find(c => 
-      c.id === ticket.rap_id || 
-      c.ten_rap === ticket.dia_chi_rap ||
-      c.dia_chi === ticket.dia_chi_rap
+    const cinema = cinemas.find(
+      c =>
+        c.id === ticket.rap_id ||
+        c.ten_rap === ticket.dia_chi_rap ||
+        c.dia_chi === ticket.dia_chi_rap,
     );
-    const movie = movies.find(m => 
-      m.id === ticket.phim_id || 
-      m.ten_phim === ticket.ten_phim
+    const movie = movies.find(
+      m => m.id === ticket.phim_id || m.ten_phim === ticket.ten_phim,
     );
-    
+
     const totalSeats = cinema?.so_ghe || 30;
 
     if (!showtimeStats[showtimeId]) {
@@ -953,16 +980,23 @@ function getShowtimeRevenueStats() {
     }
 
     showtimeStats[showtimeId].so_ve++;
-    showtimeStats[showtimeId].doanh_thu += Number.parseFloat(payment.so_tien) || 0;
+    showtimeStats[showtimeId].doanh_thu +=
+      Number.parseFloat(payment.so_tien) || 0;
   });
 
   // Tính các chỉ số bổ sung
   Object.values(showtimeStats).forEach(st => {
-    st.gia_ve_tb = st.so_ve > 0 ? (st.doanh_thu / st.so_ve) : 0;
-    st.ti_le_lap_day = st.tong_ghe > 0 ? 
-      ((st.so_ve / st.tong_ghe) * 100).toFixed(1) + '%' : '0%';
-    st.hieu_suat = st.tong_ghe > 0 ? 
-      (st.doanh_thu / (st.tong_ghe * st.gia_ve_tb || 1) * 100).toFixed(1) + '%' : '0%';
+    st.gia_ve_tb = st.so_ve > 0 ? st.doanh_thu / st.so_ve : 0;
+    st.ti_le_lap_day =
+      st.tong_ghe > 0
+        ? ((st.so_ve / st.tong_ghe) * 100).toFixed(1) + '%'
+        : '0%';
+    st.hieu_suat =
+      st.tong_ghe > 0
+        ? ((st.doanh_thu / (st.tong_ghe * st.gia_ve_tb || 1)) * 100).toFixed(
+            1,
+          ) + '%'
+        : '0%';
   });
 
   return Object.values(showtimeStats).sort((a, b) => b.doanh_thu - a.doanh_thu);
@@ -975,22 +1009,27 @@ function renderShowtimeRevenueTable() {
 
   const searchInput =
     document.querySelector('#showtimeSearch')?.value.trim().toLowerCase() || '';
-  const genreFilter = document.querySelector('#showtimeGenreFilter')?.value || 'all';
-  const dateFilter = document.querySelector('#showtimeDateFilter')?.value || 'all';
+  const genreFilter =
+    document.querySelector('#showtimeGenreFilter')?.value || 'all';
+  const dateFilter =
+    document.querySelector('#showtimeDateFilter')?.value || 'all';
 
   let data = getShowtimeRevenueStats();
 
   // Lọc theo từ khóa
   if (searchInput) {
-    data = data.filter(s => 
-      s.ten_phim.toLowerCase().includes(searchInput) ||
-      s.rap_ten.toLowerCase().includes(searchInput)
+    data = data.filter(
+      s =>
+        s.ten_phim.toLowerCase().includes(searchInput) ||
+        s.rap_ten.toLowerCase().includes(searchInput),
     );
   }
 
   // Lọc theo thể loại
   if (genreFilter !== 'all') {
-    data = data.filter(s => s.the_loai.toLowerCase() === genreFilter.toLowerCase());
+    data = data.filter(
+      s => s.the_loai.toLowerCase() === genreFilter.toLowerCase(),
+    );
   }
 
   // Lọc theo ngày
@@ -1021,9 +1060,17 @@ function renderShowtimeRevenueTable() {
       <td style="font-size: 0.85em;">${s.dia_chi_rap}</td>
       <td><strong>${s.so_ve}</strong></td>
       <td>${s.tong_ghe}</td>
-      <td><strong class="revenue-text">${formatCurrency(s.doanh_thu)}</strong></td>
+      <td><strong class="revenue-text">${formatCurrency(
+        s.doanh_thu,
+      )}</strong></td>
       <td>${formatCurrency(s.gia_ve_tb)}</td>
-      <td><span class="fill-rate ${s.so_ve / s.tong_ghe > 0.8 ? 'high' : s.so_ve / s.tong_ghe > 0.5 ? 'medium' : 'low'}">${s.ti_le_lap_day}</span></td>
+      <td><span class="fill-rate ${
+        s.so_ve / s.tong_ghe > 0.8
+          ? 'high'
+          : s.so_ve / s.tong_ghe > 0.5
+          ? 'medium'
+          : 'low'
+      }">${s.ti_le_lap_day}</span></td>
     `;
     tbody.appendChild(row);
   });
@@ -1034,19 +1081,24 @@ function renderShowtimeRevenueTable() {
   const totalSeats = data.reduce((sum, s) => sum + s.tong_ghe, 0);
   const totalRevenue = data.reduce((sum, s) => sum + s.doanh_thu, 0);
   const avgTicketPrice = totalTickets > 0 ? totalRevenue / totalTickets : 0;
-  const overallFillRate = totalSeats > 0 ? ((totalTickets / totalSeats) * 100).toFixed(2) + '%' : 'N/A';
+  const overallFillRate =
+    totalSeats > 0
+      ? ((totalTickets / totalSeats) * 100).toFixed(2) + '%'
+      : 'N/A';
 
   // Render dòng tổng cộng
   const totalRow = document.createElement('tr');
   totalRow.style.fontWeight = 'bold';
   totalRow.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
   totalRow.innerHTML = `
-    <td colspan="7" style="text-align:center;">📊 TỔNG CỘNG (${totalShows} suất chiếu)</td>
-    <td>${totalTickets}</td>
-    <td>${totalSeats}</td>
-    <td><strong class="revenue-text">${formatCurrency(totalRevenue)}</strong></td>
-    <td>${formatCurrency(avgTicketPrice)}</td>
-    <td><strong>${overallFillRate}</strong></td>
+    <td colspan="7" style="text-align:center; color:#ffffff">📊 TỔNG CỘNG (${totalShows} suất chiếu)</td>
+    <td style="color:#ffffff">${totalTickets}</td>
+    <td style="color:#ffffff">${totalSeats}</td>
+    <td style="color:#ffffff"><strong class="revenue-text">${formatCurrency(
+      totalRevenue,
+    )}</strong></td>
+    <td style="color:#ffffff">${formatCurrency(avgTicketPrice)}</td>
+    <td style="color:#ffffff"><strong>${overallFillRate}</strong></td>
   `;
   tbody.appendChild(totalRow);
 }
@@ -1063,8 +1115,10 @@ function populateDateFilter() {
   if (!dateFilter) return;
 
   const {tickets} = dashboardData;
-  const uniqueDates = [...new Set(tickets.map(t => t.ngay_chieu).filter(Boolean))];
-  
+  const uniqueDates = [
+    ...new Set(tickets.map(t => t.ngay_chieu).filter(Boolean)),
+  ];
+
   // Sort dates
   uniqueDates.sort((a, b) => {
     const [dayA, monthA, yearA] = a.split('/').map(Number);
@@ -1076,7 +1130,7 @@ function populateDateFilter() {
 
   // Clear existing options except "all"
   dateFilter.innerHTML = '<option value="all">Tất cả ngày</option>';
-  
+
   // Add date options
   uniqueDates.forEach(date => {
     const option = document.createElement('option');

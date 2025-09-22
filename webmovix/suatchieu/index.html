@@ -581,24 +581,70 @@
 
       /* Success/Error Messages */
       .alert {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
         padding: 15px 20px;
         border-radius: 10px;
         margin-bottom: 20px;
         display: flex;
         align-items: center;
         gap: 10px;
+        max-width: 90%;
+        min-width: 300px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        animation: slideDown 0.3s ease-out;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateX(-50%) translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
       }
 
       .alert-success {
-        background: rgba(40, 167, 69, 0.2);
+        background: rgba(40, 167, 69, 0.95);
         border: 1px solid #28a745;
-        color: #28a745;
+        color: #fff;
+        backdrop-filter: blur(10px);
       }
 
       .alert-error {
-        background: rgba(220, 53, 69, 0.2);
+        background: rgba(220, 53, 69, 0.95);
         border: 1px solid #dc3545;
-        color: #dc3545;
+        color: #fff;
+        backdrop-filter: blur(10px);
+      }
+
+      /* Responsive cho alert */
+      @media (max-width: 768px) {
+        .alert {
+          left: 10px;
+          right: 10px;
+          transform: none;
+          max-width: none;
+          min-width: auto;
+          top: 10px;
+        }
+      }
+
+      @media (max-width: 992px) {
+        .alert {
+          left: 220px;
+          right: 20px;
+          transform: none;
+          max-width: none;
+          min-width: auto;
+        }
       }
 
       /* Enhanced Table Styling */
@@ -661,6 +707,8 @@
       .container {
         margin-left: 240px; /* bằng width sidebar */
         transition: margin-left 0.3s ease;
+        position: relative;
+        z-index: 1;
       }
 
       /* Responsive: Sidebar thu gọn trên mobile */
@@ -684,6 +732,81 @@
         }
         .container {
           margin-left: 0;
+        }
+      }
+
+      /* Phân trang */
+      .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 20px;
+        padding: 15px;
+        background: #2a2a2a;
+        border-radius: 10px;
+        border: 1px solid #444;
+      }
+
+      .pagination button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        background: #393053;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .pagination button:hover:not(:disabled) {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .pagination button.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .pagination button:disabled {
+        background: #555;
+        color: #888;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .pagination .page-info {
+        color: #ccc;
+        font-size: 14px;
+        margin: 0 10px;
+      }
+
+      .pagination .page-size-selector {
+        margin-left: 15px;
+        padding: 6px 10px;
+        border: 1px solid #444;
+        border-radius: 6px;
+        background: #1a1a1a;
+        color: #fff;
+        font-size: 14px;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateX(-50%) translateY(-20px);
         }
       }
     </style>
@@ -949,6 +1072,9 @@
             </thead>
             <tbody id="showtimeTable"></tbody>
           </table>
+          
+          <!-- Phân trang cho bảng suất chiếu -->
+          <div id="showtimePagination" class="pagination"></div>
         </div>
       </div>
     </div>
@@ -967,6 +1093,10 @@
       let rooms = [];
       let showtimes = [];
       let movies = [];
+      
+      // Phân trang cho suất chiếu
+      let currentShowtimePage = 1;
+      const showtimesPerPage = 10;
 
       // Initialize
       document.addEventListener('DOMContentLoaded', function () {
@@ -992,6 +1122,9 @@
           rooms = roomsData;
           showtimes = showtimesData;
           movies = moviesData;
+
+          // Reset trang về 1 khi load dữ liệu mới
+          currentShowtimePage = 1;
 
           console.log('✅ Data loaded:', {
             cinemas: cinemas.length,
@@ -1023,6 +1156,39 @@
         document
           .getElementById('showtimeForm')
           .addEventListener('submit', handleShowtimeSubmit);
+
+        // Thêm validation real-time cho thời gian suất chiếu
+        const startTimeInput = document.getElementById('showtimeStart');
+        const endTimeInput = document.getElementById('showtimeEnd');
+        
+        if (startTimeInput && endTimeInput) {
+          startTimeInput.addEventListener('change', validateTimeInputs);
+          endTimeInput.addEventListener('change', validateTimeInputs);
+        }
+      }
+
+      // Validation real-time cho input thời gian
+      function validateTimeInputs() {
+        const startTime = document.getElementById('showtimeStart').value;
+        const endTime = document.getElementById('showtimeEnd').value;
+        
+        if (startTime && endTime) {
+          const startHour = parseInt(startTime.split(':')[0]);
+          const endHour = parseInt(endTime.split(':')[0]);
+          
+          if (startHour >= endHour) {
+            showAlert('⚠️ Giờ bắt đầu phải nhỏ hơn giờ kết thúc!', 'error');
+            document.getElementById('showtimeEnd').focus();
+            return false;
+          }
+          
+          if (startHour < 6 || startHour > 23 || endHour < 7 || endHour > 24) {
+            showAlert('⚠️ Thời gian chiếu phải trong khoảng 6:00 - 24:00!', 'error');
+            return false;
+          }
+        }
+        
+        return true;
       }
 
       // Tab functions
@@ -1060,20 +1226,48 @@
 
       // Show alert function
       function showAlert(message, type = 'success') {
+        // Xóa alert cũ nếu có
+        const existingAlert = document.querySelector('.alert');
+        if (existingAlert) {
+          existingAlert.remove();
+        }
+
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type}`;
         alertDiv.innerHTML = `
-                <i class="fas fa-${
-                  type === 'success' ? 'check-circle' : 'exclamation-circle'
-                }"></i>
-                ${message}
-            `;
+          <i class="fas fa-${
+            type === 'success' ? 'check-circle' : 'exclamation-circle'
+          }"></i>
+          <div style="flex: 1; white-space: pre-line;">${message}</div>
+          <button onclick="this.parentElement.remove()" style="
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 10px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+          " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+            ×
+          </button>
+        `;
 
-        document.body.insertBefore(alertDiv, document.body.firstChild);
+        document.body.appendChild(alertDiv);
 
+        // Tự động ẩn sau 8 giây cho thông báo lỗi, 5 giây cho thông báo thành công
+        const timeout = type === 'error' ? 8000 : 5000;
         setTimeout(() => {
-          alertDiv.remove();
-        }, 5000);
+          if (alertDiv.parentElement) {
+            alertDiv.style.animation = 'slideUp 0.3s ease-out forwards';
+            setTimeout(() => {
+              if (alertDiv.parentElement) {
+                alertDiv.remove();
+              }
+            }, 300);
+          }
+        }, timeout);
       }
 
       // Reset form functions
@@ -1090,6 +1284,9 @@
       function resetShowtimeForm() {
         document.getElementById('showtimeForm').reset();
         document.getElementById('showtimeId').value = '';
+        // Reset về trang 1 khi reset form
+        currentShowtimePage = 1;
+        renderShowtimeTable();
       }
 
       // Render all data
@@ -1099,6 +1296,7 @@
         renderRoomTable();
         renderShowtimeTable();
         populateSelects();
+        renderShowtimePagination();
       }
 
       // Render overview
@@ -1261,11 +1459,15 @@
           .join('');
       }
 
-      // Render showtime table
+      // Render showtime table với phân trang
       function renderShowtimeTable() {
         const tbody = document.getElementById('showtimeTable');
-        tbody.innerHTML = showtimes
-          .map(showtime => {
+        const startIndex = (currentShowtimePage - 1) * showtimesPerPage;
+        const endIndex = startIndex + showtimesPerPage;
+        const paginatedShowtimes = showtimes.slice(startIndex, endIndex);
+        
+        tbody.innerHTML = paginatedShowtimes
+          .map((showtime, index) => {
             const room = rooms.find(r => r.room_id === showtime.room_id);
             const cinema = room
               ? cinemas.find(c => c.cinema_id === room.cinema_id)
@@ -1305,6 +1507,100 @@
                 `;
           })
           .join('');
+
+        // Render phân trang
+        renderShowtimePagination();
+      }
+
+      // Render phân trang cho suất chiếu
+      function renderShowtimePagination() {
+        const paginationContainer = document.getElementById('showtimePagination');
+        const totalPages = Math.ceil(showtimes.length / showtimesPerPage);
+        
+        if (totalPages <= 1) {
+          paginationContainer.innerHTML = '';
+          return;
+        }
+
+        let paginationHTML = '';
+
+        // Nút Previous
+        paginationHTML += `
+          <button 
+            onclick="changeShowtimePage(${currentShowtimePage - 1})" 
+            ${currentShowtimePage === 1 ? 'disabled' : ''}
+            class="pagination-btn"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </button>
+        `;
+
+        // Các nút trang
+        const startPage = Math.max(1, currentShowtimePage - 2);
+        const endPage = Math.min(totalPages, currentShowtimePage + 2);
+
+        if (startPage > 1) {
+          paginationHTML += `<button onclick="changeShowtimePage(1)">1</button>`;
+          if (startPage > 2) {
+            paginationHTML += `<span class="page-info">...</span>`;
+          }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          paginationHTML += `
+            <button 
+              onclick="changeShowtimePage(${i})" 
+              class="${i === currentShowtimePage ? 'active' : ''}"
+            >
+              ${i}
+            </button>
+          `;
+        }
+
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            paginationHTML += `<span class="page-info">...</span>`;
+          }
+          paginationHTML += `<button onclick="changeShowtimePage(${totalPages})">${totalPages}</button>`;
+        }
+
+        // Nút Next
+        paginationHTML += `
+          <button 
+            onclick="changeShowtimePage(${currentShowtimePage + 1})" 
+            ${currentShowtimePage === totalPages ? 'disabled' : ''}
+            class="pagination-btn"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        `;
+
+        // Thông tin trang hiện tại
+        const startItem = (currentShowtimePage - 1) * showtimesPerPage + 1;
+        const endItem = Math.min(currentShowtimePage * showtimesPerPage, showtimes.length);
+        
+        paginationHTML += `
+          <div class="page-info">
+            Hiển thị ${startItem}-${endItem} của ${showtimes.length} suất chiếu
+          </div>
+        `;
+
+        paginationContainer.innerHTML = paginationHTML;
+      }
+
+      // Thay đổi trang suất chiếu
+      function changeShowtimePage(page) {
+        const totalPages = Math.ceil(showtimes.length / showtimesPerPage);
+        if (page >= 1 && page <= totalPages) {
+          currentShowtimePage = page;
+          renderShowtimeTable();
+          
+          // Scroll lên đầu bảng
+          const tableContainer = document.querySelector('#showtimes .table-container');
+          if (tableContainer) {
+            tableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
       }
 
       // Populate select options
@@ -1327,9 +1623,9 @@
           rooms
             .map(room => {
               const cinema = cinemas.find(c => c.cinema_id === room.cinema_id);
-              return `<option value="${room.room_id}">${room.ten_phong} (${
+              return `<option value="${room.room_id}">${room.ten_phong} - ${
                 cinema ? cinema.ten_rap : 'Rạp không xác định'
-              })</option>`;
+              }</option>`;
             })
             .join('');
 
@@ -1556,6 +1852,11 @@
         };
         const showtimeId = document.getElementById('showtimeId').value;
 
+        // Validation: Kiểm tra xung đột thời gian
+        if (!validateShowtimeTime(showtimeData, showtimeId)) {
+          return; // Dừng lại nếu có xung đột
+        }
+
         try {
           let savedShowtime;
           if (showtimeId) {
@@ -1582,6 +1883,82 @@
           console.error('❌ Error saving showtime:', error);
           showAlert('❌ Lỗi khi lưu suất chiếu!', 'error');
         }
+      }
+
+      // Validation function: Kiểm tra xung đột thời gian suất chiếu
+      function validateShowtimeTime(newShowtime, editingShowtimeId = null) {
+        const startTime = parseInt(newShowtime.thoi_gian_bat_dau);
+        const endTime = parseInt(newShowtime.thoi_gian_ket_thuc);
+        
+        // Kiểm tra thời gian hợp lệ
+        if (startTime >= endTime) {
+          showAlert('❌ Giờ bắt đầu phải nhỏ hơn giờ kết thúc!', 'error');
+          return false;
+        }
+
+        // Kiểm tra thời gian trong khoảng hợp lệ (6:00 - 24:00)
+        if (startTime < 6 || startTime > 23 || endTime < 7 || endTime > 24) {
+          showAlert('❌ Thời gian chiếu phải trong khoảng 6:00 - 24:00!', 'error');
+          return false;
+        }
+
+        // Tìm các suất chiếu hiện có trong cùng phòng và ngày
+        const existingShowtimes = showtimes.filter(showtime => {
+          // Bỏ qua suất chiếu đang được chỉnh sửa
+          if (editingShowtimeId && showtime.suat_chieu_id.toString() === editingShowtimeId.toString()) {
+            return false;
+          }
+          
+          return showtime.room_id.toString() === newShowtime.room_id.toString() &&
+                 showtime.ngay_chieu === newShowtime.ngay_chieu;
+        });
+
+        // Kiểm tra xung đột với từng suất chiếu hiện có
+        for (const existing of existingShowtimes) {
+          const existingStart = parseInt(existing.thoi_gian_bat_dau);
+          const existingEnd = parseInt(existing.thoi_gian_ket_thuc);
+          
+          // Kiểm tra xung đột thời gian
+          if (isTimeConflict(startTime, endTime, existingStart, existingEnd)) {
+            const room = rooms.find(r => r.room_id.toString() === newShowtime.room_id.toString());
+            const cinema = room ? cinemas.find(c => c.cinema_id === room.cinema_id) : null;
+            const movie = movies.find(m => m.phim_id === existing.phim_id);
+            
+            // Lấy tất cả suất chiếu trong ngày để hiển thị
+            const dayShowtimes = showtimes.filter(s => 
+              s.room_id.toString() === newShowtime.room_id.toString() &&
+              s.ngay_chieu === newShowtime.ngay_chieu
+            ).sort((a, b) => parseInt(a.thoi_gian_bat_dau) - parseInt(b.thoi_gian_bat_dau));
+            
+            let scheduleText = dayShowtimes.map(s => {
+              const m = movies.find(mov => mov.phim_id === s.phim_id);
+              return `• ${s.thoi_gian_bat_dau}:00 - ${s.thoi_gian_ket_thuc}:00: ${m ? m.ten_phim : 'N/A'}`;
+            }).join('\n');
+            
+            showAlert(
+              `❌ KHÔNG THỂ LƯU SUẤT CHIẾU!\n\n` +
+              `Phòng: ${room ? room.ten_phong : 'N/A'}\n` +
+              `Ngày: ${newShowtime.ngay_chieu}\n` +
+              `Thời gian bạn chọn: ${startTime}:00 - ${endTime}:00\n\n` +
+              `⚠️ ĐÃ CÓ SUẤT CHIẾU: "${movie ? movie.ten_phim : 'N/A'}"\n` +
+              `Thời gian: ${existingStart}:00 - ${existingEnd}:00\n\n` +
+              `Vui lòng chọn thời gian khác!`,
+              'error'
+            );
+            return false;
+          }
+        }
+
+        return true;
+      }
+
+      // Helper function: Kiểm tra xung đột thời gian
+      function isTimeConflict(start1, end1, start2, end2) {
+        // Xung đột nếu:
+        // 1. Thời gian bắt đầu mới nằm trong khoảng thời gian cũ
+        // 2. Thời gian kết thúc mới nằm trong khoảng thời gian cũ  
+        // 3. Thời gian mới bao trùm hoàn toàn thời gian cũ
+        return (start1 < end2 && end1 > start2);
       }
 
       async function createSeatsForShowtime(suatChieuId) {
@@ -1716,6 +2093,29 @@
           console.error('❌ Error in deleteSeatsForShowtime:', error);
           throw error;
         }
+      }
+
+      // Thêm hàm gợi ý thời gian trống
+      function suggestAvailableTimes(roomId, date) {
+        const existingShowtimes = showtimes.filter(showtime => 
+          showtime.room_id.toString() === roomId.toString() &&
+          showtime.ngay_chieu === date
+        );
+        
+        const occupiedTimes = existingShowtimes.map(s => ({
+          start: parseInt(s.thoi_gian_bat_dau),
+          end: parseInt(s.thoi_gian_ket_thuc)
+        }));
+        
+        const suggestions = [];
+        for (let hour = 6; hour <= 22; hour++) {
+          const isOccupied = occupiedTimes.some(ot => hour >= ot.start && hour < ot.end);
+          if (!isOccupied) {
+            suggestions.push(`${hour}:00 - ${hour + 1}:00`);
+          }
+        }
+        
+        return suggestions;
       }
 
       console.log('🎬 Cinema Management System Ready!');
