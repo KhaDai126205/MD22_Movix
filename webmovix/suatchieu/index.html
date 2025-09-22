@@ -1887,6 +1887,8 @@
 
       // Validation function: Kiểm tra xung đột thời gian suất chiếu
       function validateShowtimeTime(newShowtime, editingShowtimeId = null) {
+        const CLEANUP_TIME = 15; // 15 phút giãn cách
+        
         const startTime = parseInt(newShowtime.thoi_gian_bat_dau);
         const endTime = parseInt(newShowtime.thoi_gian_ket_thuc);
         
@@ -1913,35 +1915,17 @@
                  showtime.ngay_chieu === newShowtime.ngay_chieu;
         });
 
-        // Kiểm tra xung đột với từng suất chiếu hiện có
+        // Kiểm tra xung đột với thời gian giãn cách
         for (const existing of existingShowtimes) {
           const existingStart = parseInt(existing.thoi_gian_bat_dau);
           const existingEnd = parseInt(existing.thoi_gian_ket_thuc);
           
-          // Kiểm tra xung đột thời gian
-          if (isTimeConflict(startTime, endTime, existingStart, existingEnd)) {
-            const room = rooms.find(r => r.room_id.toString() === newShowtime.room_id.toString());
-            const cinema = room ? cinemas.find(c => c.cinema_id === room.cinema_id) : null;
-            const movie = movies.find(m => m.phim_id === existing.phim_id);
-            
-            // Lấy tất cả suất chiếu trong ngày để hiển thị
-            const dayShowtimes = showtimes.filter(s => 
-              s.room_id.toString() === newShowtime.room_id.toString() &&
-              s.ngay_chieu === newShowtime.ngay_chieu
-            ).sort((a, b) => parseInt(a.thoi_gian_bat_dau) - parseInt(b.thoi_gian_bat_dau));
-            
-            let scheduleText = dayShowtimes.map(s => {
-              const m = movies.find(mov => mov.phim_id === s.phim_id);
-              return `• ${s.thoi_gian_bat_dau}:00 - ${s.thoi_gian_ket_thuc}:00: ${m ? m.ten_phim : 'N/A'}`;
-            }).join('\n');
-            
+          // Kiểm tra xung đột với cleanup time
+          if (isTimeConflictWithCleanup(startTime, endTime, existingStart, existingEnd, CLEANUP_TIME)) {
             showAlert(
-              `❌ KHÔNG THỂ LƯU SUẤT CHIẾU!\n\n` +
-              `Phòng: ${room ? room.ten_phong : 'N/A'}\n` +
-              `Ngày: ${newShowtime.ngay_chieu}\n` +
+              `❌ Cần ${CLEANUP_TIME} phút giãn cách!\n\n` +
+              `Suất hiện tại: ${existingStart}:00 - ${existingEnd}:00\n` +
               `Thời gian bạn chọn: ${startTime}:00 - ${endTime}:00\n\n` +
-              `⚠️ ĐÃ CÓ SUẤT CHIẾU: "${movie ? movie.ten_phim : 'N/A'}"\n` +
-              `Thời gian: ${existingStart}:00 - ${existingEnd}:00\n\n` +
               `Vui lòng chọn thời gian khác!`,
               'error'
             );
@@ -1952,13 +1936,12 @@
         return true;
       }
 
-      // Helper function: Kiểm tra xung đột thời gian
-      function isTimeConflict(start1, end1, start2, end2) {
-        // Xung đột nếu:
-        // 1. Thời gian bắt đầu mới nằm trong khoảng thời gian cũ
-        // 2. Thời gian kết thúc mới nằm trong khoảng thời gian cũ  
-        // 3. Thời gian mới bao trùm hoàn toàn thời gian cũ
-        return (start1 < end2 && end1 > start2);
+      function isTimeConflictWithCleanup(start1, end1, start2, end2, cleanupTime) {
+        // Thêm cleanup time vào thời gian kết thúc
+        const end1WithCleanup = end1 + (cleanupTime / 60);
+        const end2WithCleanup = end2 + (cleanupTime / 60);
+        
+        return (start1 < end2WithCleanup && end1WithCleanup > start2);
       }
 
       async function createSeatsForShowtime(suatChieuId) {
@@ -2102,23 +2085,40 @@
           showtime.ngay_chieu === date
         );
         
-        const occupiedTimes = existingShowtimes.map(s => ({
-          start: parseInt(s.thoi_gian_bat_dau),
-          end: parseInt(s.thoi_gian_ket_thuc)
-        }));
-        
         const suggestions = [];
+        const CLEANUP_TIME = 15; // phút
+        
         for (let hour = 6; hour <= 22; hour++) {
-          const isOccupied = occupiedTimes.some(ot => hour >= ot.start && hour < ot.end);
-          if (!isOccupied) {
-            suggestions.push(`${hour}:00 - ${hour + 1}:00`);
+          const isAvailable = !existingShowtimes.some(s => {
+            const sStart = parseInt(s.thoi_gian_bat_dau);
+            const sEnd = parseInt(s.thoi_gian_ket_thuc) + (CLEANUP_TIME / 60);
+            return hour >= sStart && hour < sEnd;
+          });
+          
+          if (isAvailable) {
+            suggestions.push(`${hour}:00 - ${hour + 2}:00`);
           }
         }
         
         return suggestions;
       }
 
+      // Cần thêm 15-30 phút giãn cách
+      const MIN_CLEANUP_TIME = 15; // phút
+
+      // Phim phải chiếu ít nhất 60 phút
+      const MIN_MOVIE_DURATION = 60;
+
+      // Ưu tiên giờ vàng: 19:00-22:00
+      const PEAK_HOURS = { start: 19, end: 22 };
+
       console.log('🎬 Cinema Management System Ready!');
+
+      // Copy lịch từ ngày này sang ngày khác
+      function copySchedule(fromDate, toDate) {
+        const fromShowtimes = showtimes.filter(s => s.ngay_chieu === fromDate);
+        // Tạo suất chiếu mới cho toDate
+      }
     </script>
   </body>
 </html>
