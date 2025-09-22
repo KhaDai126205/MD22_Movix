@@ -848,14 +848,16 @@
       .total-amount {
         font-weight: 700;
         font-size: 1.2em;
-        color: #4CAF50 !important;
+        color: #4caf50 !important;
       }
 
-      .ve-details, .voucher-details {
+      .ve-details,
+      .voucher-details {
         margin-top: 20px;
       }
 
-      .ve-details h4, .voucher-details h4 {
+      .ve-details h4,
+      .voucher-details h4 {
         color: #667eea;
         margin-bottom: 15px;
       }
@@ -890,7 +892,7 @@
 
       .ve-price {
         font-weight: 700;
-        color: #4CAF50;
+        color: #4caf50;
         font-size: 1.1em;
       }
 
@@ -916,7 +918,7 @@
       }
 
       .voucher-item span:last-child {
-        color: #4CAF50;
+        color: #4caf50;
         font-weight: 700;
       }
     </style>
@@ -943,7 +945,6 @@
         >
         <a href="../food/food.html"><i class="fas fa-pizza-slice"></i> Food</a>
         <a href="../user/user.html"><i class="fas fa-user"></i> User</a>
-        <a href="../giaodien/giaodich/index.html"><i class="fas fa-receipt"></i> Giao dịch</a>
       </nav>
     </aside>
     <div class="container">
@@ -1183,7 +1184,7 @@
             </thead>
             <tbody id="showtimeTable"></tbody>
           </table>
-          
+
           <!-- Phân trang cho bảng suất chiếu -->
           <div id="showtimePagination" class="pagination"></div>
         </div>
@@ -1204,7 +1205,9 @@
             </div>
           </div>
           <div class="recent-actions">
-            <button class="recent-btn" onclick="window.location.href='giaodien/giaodich/index.html'">
+            <button
+              class="recent-btn"
+              onclick="window.location.href='giaodien/giaodich/index.html'">
               <i class="fas fa-eye"></i>
               Xem Tất Cả
             </button>
@@ -1239,7 +1242,7 @@
       let rooms = [];
       let showtimes = [];
       let movies = [];
-      
+
       // Phân trang cho suất chiếu
       let currentShowtimePage = 1;
       const showtimesPerPage = 10;
@@ -1309,7 +1312,7 @@
         // Thêm validation real-time cho thời gian suất chiếu
         const startTimeInput = document.getElementById('showtimeStart');
         const endTimeInput = document.getElementById('showtimeEnd');
-        
+
         if (startTimeInput && endTimeInput) {
           startTimeInput.addEventListener('change', validateTimeInputs);
           endTimeInput.addEventListener('change', validateTimeInputs);
@@ -1320,23 +1323,26 @@
       function validateTimeInputs() {
         const startTime = document.getElementById('showtimeStart').value;
         const endTime = document.getElementById('showtimeEnd').value;
-        
+
         if (startTime && endTime) {
           const startHour = parseInt(startTime.split(':')[0]);
           const endHour = parseInt(endTime.split(':')[0]);
-          
+
           if (startHour >= endHour) {
             showAlert('⚠️ Giờ bắt đầu phải nhỏ hơn giờ kết thúc!', 'error');
             document.getElementById('showtimeEnd').focus();
             return false;
           }
-          
+
           if (startHour < 6 || startHour > 23 || endHour < 7 || endHour > 24) {
-            showAlert('⚠️ Thời gian chiếu phải trong khoảng 6:00 - 24:00!', 'error');
+            showAlert(
+              '⚠️ Thời gian chiếu phải trong khoảng 6:00 - 24:00!',
+              'error',
+            );
             return false;
           }
         }
-        
+
         return true;
       }
 
@@ -1614,7 +1620,7 @@
         const startIndex = (currentShowtimePage - 1) * showtimesPerPage;
         const endIndex = startIndex + showtimesPerPage;
         const paginatedShowtimes = showtimes.slice(startIndex, endIndex);
-        
+
         tbody.innerHTML = paginatedShowtimes
           .map((showtime, index) => {
             const room = rooms.find(r => r.room_id === showtime.room_id);
@@ -1663,9 +1669,10 @@
 
       // Render phân trang cho suất chiếu
       function renderShowtimePagination() {
-        const paginationContainer = document.getElementById('showtimePagination');
+        const paginationContainer =
+          document.getElementById('showtimePagination');
         const totalPages = Math.ceil(showtimes.length / showtimesPerPage);
-        
+
         if (totalPages <= 1) {
           paginationContainer.innerHTML = '';
           return;
@@ -1726,8 +1733,11 @@
 
         // Thông tin trang hiện tại
         const startItem = (currentShowtimePage - 1) * showtimesPerPage + 1;
-        const endItem = Math.min(currentShowtimePage * showtimesPerPage, showtimes.length);
-        
+        const endItem = Math.min(
+          currentShowtimePage * showtimesPerPage,
+          showtimes.length,
+        );
+
         paginationHTML += `
           <div class="page-info">
             Hiển thị ${startItem}-${endItem} của ${showtimes.length} suất chiếu
@@ -1743,11 +1753,13 @@
         if (page >= 1 && page <= totalPages) {
           currentShowtimePage = page;
           renderShowtimeTable();
-          
+
           // Scroll lên đầu bảng
-          const tableContainer = document.querySelector('#showtimes .table-container');
+          const tableContainer = document.querySelector(
+            '#showtimes .table-container',
+          );
           if (tableContainer) {
-            tableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            tableContainer.scrollIntoView({behavior: 'smooth', block: 'start'});
           }
         }
       }
@@ -2037,10 +2049,10 @@
       // Validation function: Kiểm tra xung đột thời gian suất chiếu
       function validateShowtimeTime(newShowtime, editingShowtimeId = null) {
         const CLEANUP_TIME = 15; // 15 phút giãn cách
-        
+
         const startTime = parseInt(newShowtime.thoi_gian_bat_dau);
         const endTime = parseInt(newShowtime.thoi_gian_ket_thuc);
-        
+
         // Kiểm tra thời gian hợp lệ
         if (startTime >= endTime) {
           showAlert('❌ Giờ bắt đầu phải nhỏ hơn giờ kết thúc!', 'error');
@@ -2049,34 +2061,61 @@
 
         // Kiểm tra thời gian trong khoảng hợp lệ (6:00 - 24:00)
         if (startTime < 6 || startTime > 23 || endTime < 7 || endTime > 24) {
-          showAlert('❌ Thời gian chiếu phải trong khoảng 6:00 - 24:00!', 'error');
+          showAlert(
+            '❌ Thời gian chiếu phải trong khoảng 6:00 - 24:00!',
+            'error',
+          );
           return false;
         }
 
         // Tìm các suất chiếu hiện có trong cùng phòng và ngày
         const existingShowtimes = showtimes.filter(showtime => {
           // Bỏ qua suất chiếu đang được chỉnh sửa
-          if (editingShowtimeId && showtime.suat_chieu_id.toString() === editingShowtimeId.toString()) {
+          if (
+            editingShowtimeId &&
+            showtime.suat_chieu_id.toString() === editingShowtimeId.toString()
+          ) {
             return false;
           }
-          
-          return showtime.room_id.toString() === newShowtime.room_id.toString() &&
-                 showtime.ngay_chieu === newShowtime.ngay_chieu;
+
+          return (
+            showtime.room_id.toString() === newShowtime.room_id.toString() &&
+            showtime.ngay_chieu === newShowtime.ngay_chieu
+          );
         });
 
-        // Kiểm tra xung đột với thời gian giãn cách
+        // Kiểm tra xung đột/giãn cách
         for (const existing of existingShowtimes) {
           const existingStart = parseInt(existing.thoi_gian_bat_dau);
           const existingEnd = parseInt(existing.thoi_gian_ket_thuc);
-          
-          // Kiểm tra xung đột với cleanup time
-          if (isTimeConflictWithCleanup(startTime, endTime, existingStart, existingEnd, CLEANUP_TIME)) {
+
+          // 1) Trùng giờ (overlap thật sự)
+          if (startTime < existingEnd && endTime > existingStart) {
             showAlert(
-              `❌ Cần ${CLEANUP_TIME} phút giãn cách!\n\n` +
-              `Suất hiện tại: ${existingStart}:00 - ${existingEnd}:00\n` +
-              `Thời gian bạn chọn: ${startTime}:00 - ${endTime}:00\n\n` +
-              `Vui lòng chọn thời gian khác!`,
-              'error'
+              `❌ Suất chiếu trùng giờ!\n\n` +
+                `Suất hiện tại: ${existingStart}:00 - ${existingEnd}:00\n` +
+                `Thời gian bạn chọn: ${startTime}:00 - ${endTime}:00\n\n` +
+                `Vui lòng chọn thời gian khác!`,
+              'error',
+            );
+            return false;
+          }
+
+          // 2) Không trùng nhưng thiếu giãn cách CLEANUP_TIME phút
+          let gapMinutes = 9999;
+          if (endTime <= existingStart) {
+            gapMinutes = (existingStart - endTime) * 60; // new trước, cũ sau
+          } else if (existingEnd <= startTime) {
+            gapMinutes = (startTime - existingEnd) * 60; // cũ trước, new sau
+          }
+
+          if (gapMinutes < CLEANUP_TIME) {
+            showAlert(
+              `⚠️ Cần ${CLEANUP_TIME} phút giãn cách!\n\n` +
+                `Suất hiện tại: ${existingStart}:00 - ${existingEnd}:00\n` +
+                `Thời gian bạn chọn: ${startTime}:00 - ${endTime}:00\n\n` +
+                `Vui lòng chọn thời gian khác!`,
+              'error',
             );
             return false;
           }
@@ -2085,12 +2124,17 @@
         return true;
       }
 
-      function isTimeConflictWithCleanup(start1, end1, start2, end2, cleanupTime) {
-        // Thêm cleanup time vào thời gian kết thúc
-        const end1WithCleanup = end1 + (cleanupTime / 60);
-        const end2WithCleanup = end2 + (cleanupTime / 60);
-        
-        return (start1 < end2WithCleanup && end1WithCleanup > start2);
+      // Giữ lại helper nếu cần mở rộng sau (không dùng ở kiểm tra chính hiện tại)
+      function isTimeConflictWithCleanup(
+        start1,
+        end1,
+        start2,
+        end2,
+        cleanupTime,
+      ) {
+        const end1WithCleanup = end1 + cleanupTime / 60;
+        const end2WithCleanup = end2 + cleanupTime / 60;
+        return start1 < end2WithCleanup && end1WithCleanup > start2;
       }
 
       async function createSeatsForShowtime(suatChieuId) {
@@ -2229,26 +2273,27 @@
 
       // Thêm hàm gợi ý thời gian trống
       function suggestAvailableTimes(roomId, date) {
-        const existingShowtimes = showtimes.filter(showtime => 
-          showtime.room_id.toString() === roomId.toString() &&
-          showtime.ngay_chieu === date
+        const existingShowtimes = showtimes.filter(
+          showtime =>
+            showtime.room_id.toString() === roomId.toString() &&
+            showtime.ngay_chieu === date,
         );
-        
+
         const suggestions = [];
         const CLEANUP_TIME = 15; // phút
-        
+
         for (let hour = 6; hour <= 22; hour++) {
           const isAvailable = !existingShowtimes.some(s => {
             const sStart = parseInt(s.thoi_gian_bat_dau);
-            const sEnd = parseInt(s.thoi_gian_ket_thuc) + (CLEANUP_TIME / 60);
+            const sEnd = parseInt(s.thoi_gian_ket_thuc) + CLEANUP_TIME / 60;
             return hour >= sStart && hour < sEnd;
           });
-          
+
           if (isAvailable) {
             suggestions.push(`${hour}:00 - ${hour + 2}:00`);
           }
         }
-        
+
         return suggestions;
       }
 
@@ -2259,7 +2304,7 @@
       const MIN_MOVIE_DURATION = 60;
 
       // Ưu tiên giờ vàng: 19:00-22:00
-      const PEAK_HOURS = { start: 19, end: 22 };
+      const PEAK_HOURS = {start: 19, end: 22};
 
       console.log('🎬 Cinema Management System Ready!');
 
@@ -2296,7 +2341,7 @@
       // Render lịch sử giao dịch
       function renderGiaoDichHistory(giaoDichs) {
         const container = document.getElementById('recentTransactions');
-        
+
         if (giaoDichs.length === 0) {
           container.innerHTML = `
             <div class="no-transactions">
@@ -2307,8 +2352,12 @@
           return;
         }
 
-        container.innerHTML = giaoDichs.map(gd => `
-          <div class="transaction-item" onclick="showGiaoDichDetails(${gd.giao_dich_id})">
+        container.innerHTML = giaoDichs
+          .map(
+            gd => `
+          <div class="transaction-item" onclick="showGiaoDichDetails(${
+            gd.giao_dich_id
+          })">
             <div class="transaction-avatar">
               <i class="fas fa-ticket-alt"></i>
             </div>
@@ -2323,7 +2372,9 @@
               </div>
               <div class="transaction-meta">
                 <span class="transaction-method">
-                  <i class="fas fa-${getPaymentIcon(gd.phuong_thuc_thanh_toan)}"></i>
+                  <i class="fas fa-${getPaymentIcon(
+                    gd.phuong_thuc_thanh_toan,
+                  )}"></i>
                   ${getPaymentMethodName(gd.phuong_thuc_thanh_toan)}
                 </span>
                 <span class="transaction-time">
@@ -2338,7 +2389,9 @@
               </div>
             </div>
           </div>
-        `).join('');
+        `,
+          )
+          .join('');
       }
 
       // Hiển thị chi tiết giao dịch
@@ -2346,7 +2399,7 @@
         try {
           const response = await fetch(`${API_URLS.giaoDich}/${giaoDichId}`);
           const giaoDich = await response.json();
-          
+
           // Tạo modal hiển thị chi tiết
           const modal = document.createElement('div');
           modal.className = 'modal';
@@ -2368,11 +2421,15 @@
                   </div>
                   <div class="info-row">
                     <label>Phương thức thanh toán:</label>
-                    <span>${getPaymentMethodName(giaoDich.phuong_thuc_thanh_toan)}</span>
+                    <span>${getPaymentMethodName(
+                      giaoDich.phuong_thuc_thanh_toan,
+                    )}</span>
                   </div>
                   <div class="info-row">
                     <label>Trạng thái:</label>
-                    <span class="status ${giaoDich.trang_thai}">${getStatusText(giaoDich.trang_thai)}</span>
+                    <span class="status ${giaoDich.trang_thai}">${getStatusText(
+                      giaoDich.trang_thai,
+                    )}</span>
                   </div>
                   <div class="info-row">
                     <label>Tổng tiền:</label>
@@ -2384,14 +2441,18 @@
                   </div>
                   <div class="info-row">
                     <label>Thành tiền:</label>
-                    <span class="total-amount">${formatCurrency(giaoDich.thanh_toan)}</span>
+                    <span class="total-amount">${formatCurrency(
+                      giaoDich.thanh_toan,
+                    )}</span>
                   </div>
                 </div>
                 
                 <div class="ve-details">
                   <h4>Chi tiết vé đã mua (${giaoDich.chi_tiet_ve.length} vé):</h4>
                   <div class="ve-list">
-                    ${giaoDich.chi_tiet_ve.map(ve => `
+                    ${giaoDich.chi_tiet_ve
+                      .map(
+                        ve => `
                       <div class="ve-item">
                         <div class="ve-info">
                           <div class="ve-movie">${ve.ten_phim}</div>
@@ -2403,29 +2464,38 @@
                         </div>
                         <div class="ve-price">${formatCurrency(ve.gia_ve)}</div>
                       </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join('')}
                   </div>
                 </div>
                 
-                ${giaoDich.voucher_da_su_dung.length > 0 ? `
+                ${
+                  giaoDich.voucher_da_su_dung.length > 0
+                    ? `
                   <div class="voucher-details">
                     <h4>Voucher đã sử dụng:</h4>
                     <div class="voucher-list">
-                      ${giaoDich.voucher_da_su_dung.map(v => `
+                      ${giaoDich.voucher_da_su_dung
+                        .map(
+                          v => `
                         <div class="voucher-item">
                           <span>${v.ma_voucher}</span>
                           <span>-${formatCurrency(v.so_tien_giam)}</span>
                         </div>
-                      `).join('')}
+                      `,
+                        )
+                        .join('')}
                     </div>
                   </div>
-                ` : ''}
+                `
+                    : ''
+                }
               </div>
             </div>
           `;
-          
+
           document.body.appendChild(modal);
-          
         } catch (error) {
           console.error('Error loading giao dịch details:', error);
           showAlert('Lỗi khi tải chi tiết giao dịch!', 'error');
@@ -2435,32 +2505,32 @@
       // Helper functions
       function getPaymentIcon(method) {
         const icons = {
-          'cash': 'money-bill-wave',
-          'card': 'credit-card',
-          'momo': 'mobile-alt',
-          'zalopay': 'mobile-alt',
-          'banking': 'university'
+          cash: 'money-bill-wave',
+          card: 'credit-card',
+          momo: 'mobile-alt',
+          zalopay: 'mobile-alt',
+          banking: 'university',
         };
         return icons[method] || 'credit-card';
       }
 
       function getPaymentMethodName(method) {
         const names = {
-          'cash': 'Tiền mặt',
-          'card': 'Thẻ tín dụng',
-          'momo': 'MoMo',
-          'zalopay': 'ZaloPay',
-          'banking': 'Chuyển khoản'
+          cash: 'Tiền mặt',
+          card: 'Thẻ tín dụng',
+          momo: 'MoMo',
+          zalopay: 'ZaloPay',
+          banking: 'Chuyển khoản',
         };
         return names[method] || method;
       }
 
       function getStatusText(status) {
         const statuses = {
-          'pending': 'Chờ thanh toán',
-          'completed': 'Hoàn thành',
-          'cancelled': 'Đã hủy',
-          'refunded': 'Đã hoàn tiền'
+          pending: 'Chờ thanh toán',
+          completed: 'Hoàn thành',
+          cancelled: 'Đã hủy',
+          refunded: 'Đã hoàn tiền',
         };
         return statuses[status] || status;
       }
@@ -2468,7 +2538,7 @@
       function formatCurrency(amount) {
         return new Intl.NumberFormat('vi-VN', {
           style: 'currency',
-          currency: 'VND'
+          currency: 'VND',
         }).format(amount);
       }
 
@@ -2504,7 +2574,7 @@
             </div>
           </div>
         `;
-        
+
         document.body.appendChild(modal);
         loadAllTransactions();
       }
@@ -2521,7 +2591,9 @@
 
       function renderAllTransactions(transactions) {
         const container = document.getElementById('allTransactionsList');
-        container.innerHTML = transactions.map(gd => `
+        container.innerHTML = transactions
+          .map(
+            gd => `
           <div class="transaction-row" onclick="showGiaoDichDetails(${gd.giao_dich_id})">
             <div class="transaction-code">${gd.ma_giao_dich}</div>
             <div class="transaction-movie">${gd.ten_phim_chinh}</div>
@@ -2531,7 +2603,9 @@
             <div class="transaction-status ${gd.trang_thai}">${getStatusText(gd.trang_thai)}</div>
             <div class="transaction-date">${formatDateTime(gd.ngay_tao)}</div>
           </div>
-        `).join('');
+        `,
+          )
+          .join('');
       }
     </script>
   </body>

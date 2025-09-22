@@ -10,6 +10,7 @@ const API_URLS = {
   showtimes: `http://localhost:3000/suatchieu`, // API suất chiếu
   rooms: `http://localhost:3000/phongchieu`, // API phòng chiếu
   seats: `http://localhost:3000/ghe`, // API ghế
+  foods: `https://688253a466a7eb81224e3f86.mockapi.io/doan/food`, // Đồ ăn đã đặt
 };
 
 // Global data storage
@@ -22,6 +23,7 @@ const dashboardData = {
   showtimes: [], // Thêm dữ liệu suất chiếu
   rooms: [], // Thêm dữ liệu phòng chiếu
   seats: [], // Thêm dữ liệu ghế
+  foods: [], // Đồ ăn
 };
 
 // Initialize dashboard
@@ -88,6 +90,7 @@ async function loadAllData() {
       apiCalls.push(fetchData('showtimes', API_URLS.showtimes));
       apiCalls.push(fetchData('rooms', API_URLS.rooms));
       apiCalls.push(fetchData('seats', API_URLS.seats));
+      apiCalls.push(fetchData('foods', API_URLS.foods));
     } catch (error) {
       console.log('Additional APIs not available:', error);
     }
@@ -106,6 +109,7 @@ async function loadAllData() {
         'showtimes',
         'rooms',
         'seats',
+        'foods',
       ];
       const key = keys[index];
 
@@ -936,29 +940,40 @@ function updateMovieRevenueSection() {
 
 // ===================== THỐNG KÊ THEO SUẤT CHIẾU CHI TIẾT =====================
 
+function isPaymentCompleted(payment) {
+  if (!payment) return false;
+  const raw = String(payment.trang_thai || '').toLowerCase();
+  if (!raw) return true; // không có trạng thái => coi như hợp lệ (đồng bộ với logic các bảng khác)
+  // chấp nhận các biến thể phổ biến
+  return (
+    raw.includes('đã thanh toán') ||
+    raw.includes('da thanh toan') ||
+    raw.includes('thanh toán thành công') ||
+    raw.includes('thanh toan thanh cong') ||
+    raw.includes('completed') ||
+    raw.includes('hoàn thành') ||
+    raw.includes('hoan thanh') ||
+    raw === 'paid' ||
+    raw === 'success'
+  );
+}
+
 // Lấy thống kê chi tiết theo suất chiếu
 function getShowtimeRevenueStats() {
   const {tickets, payments, cinemas, movies} = dashboardData;
   const showtimeStats = {};
 
-  tickets.forEach(ticket => {
-    const payment = payments.find(p => p.ve_id === ticket.ve_id);
-    if (
-      !payment ||
-      (payment.trang_thai && payment.trang_thai !== 'Đã thanh toán')
-    )
-      return;
+  // Duyệt theo payment đã hoàn tất để chắc chắn chỉ lấy suất có thanh toán
+  payments.forEach(p => {
+    if (!isPaymentCompleted(p)) return;
+    const ticket = tickets.find(t => String(t.ve_id) === String(p.ve_id));
+    if (!ticket) return; // không có vé tương ứng thì bỏ qua
 
     const showtimeId = ticket.suat_chieu_id;
     const cinema = cinemas.find(
-      c =>
-        c.id === ticket.rap_id ||
-        c.ten_rap === ticket.dia_chi_rap ||
-        c.dia_chi === ticket.dia_chi_rap,
+      c => c.id === ticket.rap_id || c.ten_rap === ticket.dia_chi_rap || c.dia_chi === ticket.dia_chi_rap,
     );
-    const movie = movies.find(
-      m => m.id === ticket.phim_id || m.ten_phim === ticket.ten_phim,
-    );
+    const movie = movies.find(m => m.id === ticket.phim_id || m.ten_phim === ticket.ten_phim);
 
     const totalSeats = cinema?.so_ghe || 30;
 
@@ -979,9 +994,8 @@ function getShowtimeRevenueStats() {
       };
     }
 
-    showtimeStats[showtimeId].so_ve++;
-    showtimeStats[showtimeId].doanh_thu +=
-      Number.parseFloat(payment.so_tien) || 0;
+    showtimeStats[showtimeId].so_ve += 1;
+    showtimeStats[showtimeId].doanh_thu += Number.parseFloat(p.so_tien) || 0;
   });
 
   // Tính các chỉ số bổ sung
@@ -1206,7 +1220,10 @@ function buildTransactionsFromExistingData() {
         phuong_thuc: p.phuong_thuc || 'cash',
         trang_thai: (p.trang_thai && p.trang_thai.toLowerCase().includes('thanh')) ? 'completed' : 'completed',
         ngay_thanh_toan: p.ngay_mua || '',
-        items: []
+        items: [],
+        foods: [],
+        food_total: 0,
+        _foodsAdded: false,
       });
     }
 
@@ -1221,6 +1238,29 @@ function buildTransactionsFromExistingData() {
       ghe: ticket?.vi_tri_ghe || '',
       gia_ve: Number.parseFloat(p.so_tien) || 0
     });
+
+    // Bổ sung đồ ăn đã đặt của khách hàng (theo khach_hang_id)
+    if (!tx._foodsAdded) {
+      const customerId = p.khach_hang_id;
+      const paidDate = p.ngay_mua || tx.ngay_thanh_toan || '';
+      const foodsOrdered = (dashboardData.foods || []).flatMap(f => {
+        const orders = Array.isArray(f.khach_hang_id) ? f.khach_hang_id : [];
+        return orders
+          .filter(o => String(o.id) === String(customerId) && (!paidDate || String(o.ngay_dat) === String(paidDate)))
+          .map(o => ({
+            ten_mon: f.name || f.ten_mon || f.ten || 'Món',
+            gia: Number.parseFloat(f.price) || 0,
+            anh: f.image || '',
+            ngay_dat: o.ngay_dat || '',
+            gio_chieu: o.gio_chieu || '',
+          }));
+      });
+      if (foodsOrdered.length > 0) {
+        tx.foods = foodsOrdered;
+        tx.food_total = foodsOrdered.reduce((s, it) => s + (it.gia || 0), 0);
+      }
+      tx._foodsAdded = true;
+    }
   });
 
   // Sắp xếp mới nhất trước theo ngày thanh toán
@@ -1388,6 +1428,26 @@ function openTransactionModal(maGD) {
           .join('')}
       </div>
     </div>
+    ${tx.foods && tx.foods.length > 0 ? `
+    <div class="ve-details" style="margin-top:16px;">
+      <h4>Đồ ăn đã đặt (${tx.foods.length} món):</h4>
+      <div class="ve-list">
+        ${tx.foods
+          .map(
+            f => `
+          <div class="ve-item">
+            <div>
+              <div class="ve-movie">${f.ten_mon}</div>
+              <div class="ve-details-text">${f.ngay_dat || ''} ${f.gio_chieu ? '- ' + f.gio_chieu + 'h' : ''}</div>
+            </div>
+            <div class="ve-price">${formatCurrency(f.gia)}</div>
+          </div>
+        `,
+          )
+          .join('')}
+      </div>
+      <div style="text-align:right;margin-top:8px;font-weight:700;color:#10b981;">Tổng đồ ăn: ${formatCurrency(tx.food_total)}</div>
+    </div>` : ''}
   `;
   document.getElementById('transactionModal').style.display = 'block';
 }
