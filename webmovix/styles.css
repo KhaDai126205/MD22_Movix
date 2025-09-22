@@ -1658,3 +1658,181 @@ tr:hover {
     padding: 8px 4px;
   }
 }
+
+/* ===================== TRANSACTION DETAIL MODAL ===================== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 24px;
+}
+
+.modal-content {
+  width: 100%;
+  margin-left: 400px;
+  max-width: 900px;
+  background: #1e1e2d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, rgba(102,126,234,.15), rgba(118,75,162,.15));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modal-header .chart-title h3 {
+  color: #fff;
+}
+
+.modal-header .close {
+  color: #e5e7eb;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background .2s ease, transform .1s ease;
+}
+
+.modal-header .close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.05);
+}
+
+.modal-body {
+  padding: 20px 22px 22px 22px;
+  color: #e5e7eb;
+}
+
+/* Transaction info summary */
+.giao-dich-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 16px;
+  padding: 14px;
+  background: #222236;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.giao-dich-info .info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.giao-dich-info .info-row label {
+  color: #a3a3b2;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.giao-dich-info .info-row span {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.giao-dich-info .info-row .total-amount {
+  color: #10b981;
+  font-weight: 800;
+}
+
+/* Status chips (reuse class 'status' with variants) */
+.status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status.completed {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.status.pending {
+  background: rgba(251, 191, 36, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+.status.cancelled {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.status.refunded {
+  background: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+}
+
+/* Ticket list */
+.ve-details h4 {
+  margin: 14px 0 10px 0;
+  font-size: 16px;
+  color: #fff;
+}
+
+.ve-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ve-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #202038;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.ve-movie {
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.ve-details-text {
+  color: #a3a3b2;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.ve-price {
+  font-weight: 800;
+  color: #10b981;
+}
+
+@media (max-width: 640px) {
+  .modal {
+    padding: 12px;
+  }
+  .modal-body {
+    padding: 16px;
+  }
+  .ve-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

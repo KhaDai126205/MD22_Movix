@@ -1171,3 +1171,275 @@ function setupShowtimeRevenueFilters() {
 }
 
 console.log('🎬 Enhanced Cinema Dashboard Script Ready!');
+// ===================== LỊCH SỬ THANH TOÁN (GIAO DỊCH) =====================
+
+// State phân trang giao dịch
+let giaoDichPage = 1;
+const giaoDichPerPage = 10;
+let giaoDichCache = []; // dữ liệu sau khi join từ payments + tickets + customers
+
+// Chuẩn hóa về "giao dịch" từ payments + tickets + customers
+function buildTransactionsFromExistingData() {
+  const { payments, tickets, customers } = dashboardData;
+  if (!payments || payments.length === 0) return [];
+
+  // Gom vé theo thanh toán (1 payment ↔ 1 vé trong cấu trúc hiện tại)
+  // Nếu sau này bạn có bảng giao dịch riêng, chỉ cần thay nguồn dữ liệu ở đây.
+  const byCode = new Map(); // key: ma_giao_dich (sinh tạm), value: tx
+
+  payments.forEach((p, idx) => {
+    const ticket = tickets.find(t => t.ve_id === p.ve_id);
+    const customer = customers.find(
+      c => String(c.khach_hang_id) === String(p.khach_hang_id)
+    );
+
+    const maGD = p.ma_giao_dich || `GD${(p.thanh_toan_id || idx + 1).toString().padStart(6, '0')}`;
+    if (!byCode.has(maGD)) {
+      byCode.set(maGD, {
+        ma_giao_dich: maGD,
+        khach_hang: customer ? customer.ho_ten : 'Khách vãng lai',
+        khach_hang_id: p.khach_hang_id,
+        phim: ticket?.ten_phim || 'Không rõ',
+        rap: ticket?.dia_chi_rap || 'Không rõ',
+        so_ve: 0,
+        thanh_tien: 0,
+        phuong_thuc: p.phuong_thuc || 'cash',
+        trang_thai: (p.trang_thai && p.trang_thai.toLowerCase().includes('thanh')) ? 'completed' : 'completed',
+        ngay_thanh_toan: p.ngay_mua || '',
+        items: []
+      });
+    }
+
+    const tx = byCode.get(maGD);
+    tx.so_ve += 1;
+    tx.thanh_tien += Number.parseFloat(p.so_tien) || 0;
+    tx.items.push({
+      ten_phim: ticket?.ten_phim || 'Không rõ',
+      rap: ticket?.dia_chi_rap || 'Không rõ',
+      ngay_chieu: ticket?.ngay_chieu || '',
+      gio_chieu: ticket?.gio_chieu || '',
+      ghe: ticket?.vi_tri_ghe || '',
+      gia_ve: Number.parseFloat(p.so_tien) || 0
+    });
+  });
+
+  // Sắp xếp mới nhất trước theo ngày thanh toán
+  const arr = Array.from(byCode.values());
+  arr.sort((a, b) => {
+    const pa = a.ngay_thanh_toan?.split('/') || [];
+    const pb = b.ngay_thanh_toan?.split('/') || [];
+    if (pa.length === 3 && pb.length === 3) {
+      const da = new Date(+pa[2], +pa[1] - 1, +pa[0]);
+      const db = new Date(+pb[2], +pb[1] - 1, +pb[0]);
+      return db - da;
+    }
+    return 0;
+  });
+
+  return arr;
+}
+
+function renderGiaoDichTable() {
+  const tbody = document.querySelector('#giaoDichTable tbody');
+  const pagination = document.getElementById('giaoDichPagination');
+  if (!tbody || !pagination) return;
+
+  // Lọc theo ô tìm kiếm + filter
+  const kw = (document.getElementById('giaoDichSearch')?.value || '').trim().toLowerCase();
+  const status = document.getElementById('giaoDichStatusFilter')?.value || 'all';
+  const payment = document.getElementById('giaoDichPaymentFilter')?.value || 'all';
+
+  let data = [...giaoDichCache];
+
+  if (kw) {
+    data = data.filter(tx =>
+      tx.ma_giao_dich.toLowerCase().includes(kw) ||
+      tx.khach_hang.toLowerCase().includes(kw) ||
+      tx.phim.toLowerCase().includes(kw) ||
+      tx.rap.toLowerCase().includes(kw)
+    );
+  }
+  if (status !== 'all') {
+    data = data.filter(tx => tx.trang_thai === status);
+  }
+  if (payment !== 'all') {
+    data = data.filter(tx => (tx.phuong_thuc || '').toLowerCase() === payment);
+  }
+
+  // Phân trang
+  const totalPages = Math.max(1, Math.ceil(data.length / giaoDichPerPage));
+  if (giaoDichPage > totalPages) giaoDichPage = totalPages;
+  const start = (giaoDichPage - 1) * giaoDichPerPage;
+  const pageItems = data.slice(start, start + giaoDichPerPage);
+
+  // Render tbody
+  if (pageItems.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="11" class="loading-row" style="text-align:center;color:#999">Không có giao dịch</td>
+      </tr>
+    `;
+  } else {
+    tbody.innerHTML = pageItems
+      .map((tx, idx) => {
+        return `
+          <tr>
+            <td>${start + idx + 1}</td>
+            <td><strong>${tx.ma_giao_dich}</strong></td>
+            <td>${tx.khach_hang}</td>
+            <td>${tx.phim}</td>
+            <td>${tx.rap}</td>
+            <td>${tx.so_ve}</td>
+            <td><strong class="revenue-text">${formatCurrency(tx.thanh_tien)}</strong></td>
+            <td>${getPaymentMethodName(tx.phuong_thuc)}</td>
+            <td><span class="status ${tx.trang_thai}">${getStatusText(tx.trang_thai)}</span></td>
+            <td>${tx.ngay_thanh_toan || ''}</td>
+            <td>
+              <button class="table-btn" onclick="openTransactionModal('${tx.ma_giao_dich}')">
+                <i class="fas fa-eye"></i> Xem
+              </button>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+  }
+
+  // Render phân trang
+  let html = `
+    <button ${giaoDichPage === 1 ? 'disabled' : ''} onclick="changeGiaoDichPage(${giaoDichPage - 1})"><i class="fas fa-chevron-left"></i></button>
+  `;
+  const startPage = Math.max(1, giaoDichPage - 2);
+  const endPage = Math.min(totalPages, giaoDichPage + 2);
+  if (startPage > 1) {
+    html += `<button onclick="changeGiaoDichPage(1)">1</button>`;
+    if (startPage > 2) html += `<span class="page-info">...</span>`;
+  }
+  for (let i = startPage; i <= endPage; i++) {
+    html += `<button class="${i === giaoDichPage ? 'active' : ''}" onclick="changeGiaoDichPage(${i})">${i}</button>`;
+  }
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) html += `<span class="page-info">...</span>`;
+    html += `<button onclick="changeGiaoDichPage(${totalPages})">${totalPages}</button>`;
+  }
+  html += `
+    <button ${giaoDichPage === totalPages ? 'disabled' : ''} onclick="changeGiaoDichPage(${giaoDichPage + 1})"><i class="fas fa-chevron-right"></i></button>
+    <div class="page-info">Hiển thị ${data.length === 0 ? 0 : (start + 1)}-${Math.min(start + giaoDichPerPage, data.length)} của ${data.length} giao dịch</div>
+  `;
+  pagination.innerHTML = html;
+}
+
+function changeGiaoDichPage(p) {
+  giaoDichPage = p;
+  renderGiaoDichTable();
+}
+
+function getPaymentMethodName(method) {
+  const names = {
+    cash: 'Tiền mặt',
+    card: 'Thẻ tín dụng',
+    momo: 'MoMo',
+    zalopay: 'ZaloPay',
+    banking: 'Chuyển khoản'
+  };
+  return names[(method || '').toLowerCase()] || method || 'Khác';
+}
+
+function getStatusText(status) {
+  const map = {
+    completed: 'Hoàn thành',
+    pending: 'Chờ thanh toán',
+    cancelled: 'Đã hủy',
+    refunded: 'Đã hoàn tiền'
+  };
+  return map[(status || '').toLowerCase()] || 'Hoàn thành';
+}
+
+function openTransactionModal(maGD) {
+  const tx = giaoDichCache.find(t => t.ma_giao_dich === maGD);
+  if (!tx) return;
+
+  document.getElementById('gdModalTitle').textContent = `Chi tiết giao dịch: ${tx.ma_giao_dich}`;
+  const body = document.getElementById('gdModalBody');
+  body.innerHTML = `
+    <div class="giao-dich-info" style="margin-bottom:16px">
+      <div class="info-row"><label>Mã GD:</label><span>${tx.ma_giao_dich}</span></div>
+      <div class="info-row"><label>Khách hàng:</label><span>${tx.khach_hang}</span></div>
+      <div class="info-row"><label>Phương thức:</label><span>${getPaymentMethodName(tx.phuong_thuc)}</span></div>
+      <div class="info-row"><label>Trạng thái:</label><span class="status ${tx.trang_thai}">${getStatusText(tx.trang_thai)}</span></div>
+      <div class="info-row"><label>Ngày thanh toán:</label><span>${tx.ngay_thanh_toan || ''}</span></div>
+      <div class="info-row"><label>Thành tiền:</label><span class="total-amount">${formatCurrency(tx.thanh_tien)}</span></div>
+    </div>
+    <div class="ve-details">
+      <h4>Chi tiết vé (${tx.items.length} vé):</h4>
+      <div class="ve-list">
+        ${tx.items
+          .map(
+            v => `
+          <div class="ve-item">
+            <div>
+              <div class="ve-movie">${v.ten_phim}</div>
+              <div class="ve-details-text">${v.rap}<br>${v.ngay_chieu} - ${v.gio_chieu}<br>Ghế: ${v.ghe}</div>
+            </div>
+            <div class="ve-price">${formatCurrency(v.gia_ve)}</div>
+          </div>
+        `,
+          )
+          .join('')}
+      </div>
+    </div>
+  `;
+  document.getElementById('transactionModal').style.display = 'block';
+}
+
+function closeTransactionModal() {
+  const m = document.getElementById('transactionModal');
+  if (m) m.style.display = 'none';
+}
+
+function exportGiaoDich() {
+  const rows = [['Mã GD', 'Khách hàng', 'Phim', 'Rạp', 'Số vé', 'Thành tiền', 'Phương thức', 'Trạng thái', 'Ngày thanh toán']];
+  giaoDichCache.forEach(tx => {
+    rows.push([
+      tx.ma_giao_dich,
+      tx.khach_hang,
+      tx.phim,
+      tx.rap,
+      String(tx.so_ve),
+      String(tx.thanh_tien),
+      getPaymentMethodName(tx.phuong_thuc),
+      getStatusText(tx.trang_thai),
+      tx.ngay_thanh_toan || ''
+    ]);
+  });
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `giao_dich_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// Gắn vào vòng đời dashboard
+const _oldUpdate = updateDashboard;
+updateDashboard = function() {
+  _oldUpdate();
+  // Build once mỗi lần load data
+  giaoDichCache = buildTransactionsFromExistingData();
+  // Render lần đầu
+  renderGiaoDichTable();
+
+  // Gắn filter events 1 lần
+  document.getElementById('giaoDichSearch')?.addEventListener('input', () => {
+    giaoDichPage = 1;
+    renderGiaoDichTable();
+  });
+  document.getElementById('giaoDichStatusFilter')?.addEventListener('change', () => {
+    giaoDichPage = 1;
+    renderGiaoDichTable();
+  });
+  document.getElementById('giaoDichPaymentFilter')?.addEventListener('change', () => {
+    giaoDichPage = 1;
+    renderGiaoDichTable();
+  });
+};

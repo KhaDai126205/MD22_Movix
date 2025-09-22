@@ -809,6 +809,116 @@
           transform: translateX(-50%) translateY(-20px);
         }
       }
+
+      /* Giao dịch chi tiết modal */
+      .giao-dich-details {
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .giao-dich-info {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .info-row:last-child {
+        border-bottom: none;
+      }
+
+      .info-row label {
+        font-weight: 600;
+        color: #ccc;
+      }
+
+      .info-row span {
+        color: #fff;
+      }
+
+      .total-amount {
+        font-weight: 700;
+        font-size: 1.2em;
+        color: #4CAF50 !important;
+      }
+
+      .ve-details, .voucher-details {
+        margin-top: 20px;
+      }
+
+      .ve-details h4, .voucher-details h4 {
+        color: #667eea;
+        margin-bottom: 15px;
+      }
+
+      .ve-list {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .ve-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .ve-movie {
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 5px;
+      }
+
+      .ve-details-text {
+        font-size: 0.9em;
+        color: #aaa;
+        line-height: 1.4;
+      }
+
+      .ve-price {
+        font-weight: 700;
+        color: #4CAF50;
+        font-size: 1.1em;
+      }
+
+      .voucher-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .voucher-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 6px;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+      }
+
+      .voucher-item span:first-child {
+        color: #667eea;
+        font-weight: 600;
+      }
+
+      .voucher-item span:last-child {
+        color: #4CAF50;
+        font-weight: 700;
+      }
     </style>
   </head>
   <body>
@@ -833,6 +943,7 @@
         >
         <a href="../food/food.html"><i class="fas fa-pizza-slice"></i> Food</a>
         <a href="../user/user.html"><i class="fas fa-user"></i> User</a>
+        <a href="../giaodien/giaodich/index.html"><i class="fas fa-receipt"></i> Giao dịch</a>
       </nav>
     </aside>
     <div class="container">
@@ -1079,6 +1190,41 @@
       </div>
     </div>
 
+    <!-- Recent Transactions -->
+    <section class="recent-section" data-aos="fade-up" data-aos-delay="900">
+      <div class="recent-container">
+        <div class="recent-header">
+          <div class="recent-title">
+            <div class="recent-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div>
+              <h3>Lịch Sử Giao Dịch</h3>
+              <p>Giao dịch mua vé gần đây</p>
+            </div>
+          </div>
+          <div class="recent-actions">
+            <button class="recent-btn" onclick="window.location.href='giaodien/giaodich/index.html'">
+              <i class="fas fa-eye"></i>
+              Xem Tất Cả
+            </button>
+          </div>
+        </div>
+        <div class="recent-content" id="recentTransactions">
+          <div class="loading-transactions">
+            <div class="loading-transaction">
+              <div class="loading-avatar"></div>
+              <div class="loading-details">
+                <div class="loading-line"></div>
+                <div class="loading-line short"></div>
+              </div>
+              <div class="loading-amount"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <script>
       // API URLs
       const API = {
@@ -1138,6 +1284,9 @@
             renderAll();
             document.body.style.cursor = 'default'; // Trả lại cursor bình thường
           }, 200);
+
+          // Load lịch sử giao dịch
+          await loadGiaoDichHistory();
         } catch (error) {
           document.body.style.cursor = 'default';
           console.error('❌ Error loading data:', error);
@@ -2118,6 +2267,271 @@
       function copySchedule(fromDate, toDate) {
         const fromShowtimes = showtimes.filter(s => s.ngay_chieu === fromDate);
         // Tạo suất chiếu mới cho toDate
+      }
+
+      // Thêm API giao dịch
+      const API_URLS = {
+        // ... existing APIs
+        giaoDich: `http://localhost:3000/giaodich`,
+      };
+
+      // Thêm vào dashboardData
+      const dashboardData = {
+        // ... existing data
+        giaoDichs: [],
+      };
+
+      // Load lịch sử giao dịch
+      async function loadGiaoDichHistory() {
+        try {
+          const response = await fetch(`${API_URLS.giaoDich}?limit=50`);
+          const result = await response.json();
+          dashboardData.giaoDichs = result.data;
+          renderGiaoDichHistory(result.data);
+        } catch (error) {
+          console.error('Error loading giao dịch history:', error);
+        }
+      }
+
+      // Render lịch sử giao dịch
+      function renderGiaoDichHistory(giaoDichs) {
+        const container = document.getElementById('recentTransactions');
+        
+        if (giaoDichs.length === 0) {
+          container.innerHTML = `
+            <div class="no-transactions">
+              <i class="fas fa-receipt"></i>
+              <p>Chưa có giao dịch nào</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = giaoDichs.map(gd => `
+          <div class="transaction-item" onclick="showGiaoDichDetails(${gd.giao_dich_id})">
+            <div class="transaction-avatar">
+              <i class="fas fa-ticket-alt"></i>
+            </div>
+            <div class="transaction-details">
+              <div class="transaction-title">
+                ${gd.ma_giao_dich}
+              </div>
+              <div class="transaction-info">
+                <span class="transaction-movie">${gd.ten_phim_chinh}</span>
+                <span class="transaction-cinema">${gd.ten_rap_chinh}</span>
+                <span class="transaction-seats">${gd.so_ve} vé</span>
+              </div>
+              <div class="transaction-meta">
+                <span class="transaction-method">
+                  <i class="fas fa-${getPaymentIcon(gd.phuong_thuc_thanh_toan)}"></i>
+                  ${getPaymentMethodName(gd.phuong_thuc_thanh_toan)}
+                </span>
+                <span class="transaction-time">
+                  ${formatDateTime(gd.ngay_tao)}
+                </span>
+              </div>
+            </div>
+            <div class="transaction-amount">
+              <div class="amount">${formatCurrency(gd.thanh_toan)}</div>
+              <div class="status ${gd.trang_thai}">
+                ${getStatusText(gd.trang_thai)}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Hiển thị chi tiết giao dịch
+      async function showGiaoDichDetails(giaoDichId) {
+        try {
+          const response = await fetch(`${API_URLS.giaoDich}/${giaoDichId}`);
+          const giaoDich = await response.json();
+          
+          // Tạo modal hiển thị chi tiết
+          const modal = document.createElement('div');
+          modal.className = 'modal';
+          modal.innerHTML = `
+            <div class="modal-content giao-dich-details">
+              <div class="modal-header">
+                <h3>Chi tiết giao dịch: ${giaoDich.ma_giao_dich}</h3>
+                <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
+              </div>
+              <div class="modal-body">
+                <div class="giao-dich-info">
+                  <div class="info-row">
+                    <label>Mã giao dịch:</label>
+                    <span>${giaoDich.ma_giao_dich}</span>
+                  </div>
+                  <div class="info-row">
+                    <label>Ngày tạo:</label>
+                    <span>${formatDateTime(giaoDich.ngay_tao)}</span>
+                  </div>
+                  <div class="info-row">
+                    <label>Phương thức thanh toán:</label>
+                    <span>${getPaymentMethodName(giaoDich.phuong_thuc_thanh_toan)}</span>
+                  </div>
+                  <div class="info-row">
+                    <label>Trạng thái:</label>
+                    <span class="status ${giaoDich.trang_thai}">${getStatusText(giaoDich.trang_thai)}</span>
+                  </div>
+                  <div class="info-row">
+                    <label>Tổng tiền:</label>
+                    <span>${formatCurrency(giaoDich.tong_tien)}</span>
+                  </div>
+                  <div class="info-row">
+                    <label>Giảm giá:</label>
+                    <span>${formatCurrency(giaoDich.giam_gia)}</span>
+                  </div>
+                  <div class="info-row">
+                    <label>Thành tiền:</label>
+                    <span class="total-amount">${formatCurrency(giaoDich.thanh_toan)}</span>
+                  </div>
+                </div>
+                
+                <div class="ve-details">
+                  <h4>Chi tiết vé đã mua (${giaoDich.chi_tiet_ve.length} vé):</h4>
+                  <div class="ve-list">
+                    ${giaoDich.chi_tiet_ve.map(ve => `
+                      <div class="ve-item">
+                        <div class="ve-info">
+                          <div class="ve-movie">${ve.ten_phim}</div>
+                          <div class="ve-details-text">
+                            ${ve.ten_phong} - ${ve.dia_chi_rap}<br>
+                            ${ve.ngay_chieu} - ${ve.gio_chieu}<br>
+                            Ghế: ${ve.vi_tri_ghe} (${ve.loai_ghe})
+                          </div>
+                        </div>
+                        <div class="ve-price">${formatCurrency(ve.gia_ve)}</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+                
+                ${giaoDich.voucher_da_su_dung.length > 0 ? `
+                  <div class="voucher-details">
+                    <h4>Voucher đã sử dụng:</h4>
+                    <div class="voucher-list">
+                      ${giaoDich.voucher_da_su_dung.map(v => `
+                        <div class="voucher-item">
+                          <span>${v.ma_voucher}</span>
+                          <span>-${formatCurrency(v.so_tien_giam)}</span>
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+          
+          document.body.appendChild(modal);
+          
+        } catch (error) {
+          console.error('Error loading giao dịch details:', error);
+          showAlert('Lỗi khi tải chi tiết giao dịch!', 'error');
+        }
+      }
+
+      // Helper functions
+      function getPaymentIcon(method) {
+        const icons = {
+          'cash': 'money-bill-wave',
+          'card': 'credit-card',
+          'momo': 'mobile-alt',
+          'zalopay': 'mobile-alt',
+          'banking': 'university'
+        };
+        return icons[method] || 'credit-card';
+      }
+
+      function getPaymentMethodName(method) {
+        const names = {
+          'cash': 'Tiền mặt',
+          'card': 'Thẻ tín dụng',
+          'momo': 'MoMo',
+          'zalopay': 'ZaloPay',
+          'banking': 'Chuyển khoản'
+        };
+        return names[method] || method;
+      }
+
+      function getStatusText(status) {
+        const statuses = {
+          'pending': 'Chờ thanh toán',
+          'completed': 'Hoàn thành',
+          'cancelled': 'Đã hủy',
+          'refunded': 'Đã hoàn tiền'
+        };
+        return statuses[status] || status;
+      }
+
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND'
+        }).format(amount);
+      }
+
+      function formatDateTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleString('vi-VN');
+      }
+
+      // Hiển thị tất cả giao dịch với phân trang
+      function showAllTransactions() {
+        // Tạo modal hiển thị danh sách đầy đủ
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+          <div class="modal-content all-transactions">
+            <div class="modal-header">
+              <h3>Tất Cả Giao Dịch</h3>
+              <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
+            </div>
+            <div class="modal-body">
+              <div class="transaction-filters">
+                <input type="text" id="transactionSearch" placeholder="Tìm theo mã giao dịch hoặc tên phim...">
+                <select id="statusFilter">
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="completed">Hoàn thành</option>
+                  <option value="cancelled">Đã hủy</option>
+                  <option value="pending">Chờ thanh toán</option>
+                </select>
+              </div>
+              <div id="allTransactionsList" class="all-transactions-list">
+                <!-- Sẽ được load bằng JavaScript -->
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        loadAllTransactions();
+      }
+
+      async function loadAllTransactions() {
+        try {
+          const response = await fetch(`${API_URLS.giaoDich}?limit=100`);
+          const result = await response.json();
+          renderAllTransactions(result.data);
+        } catch (error) {
+          console.error('Error loading all transactions:', error);
+        }
+      }
+
+      function renderAllTransactions(transactions) {
+        const container = document.getElementById('allTransactionsList');
+        container.innerHTML = transactions.map(gd => `
+          <div class="transaction-row" onclick="showGiaoDichDetails(${gd.giao_dich_id})">
+            <div class="transaction-code">${gd.ma_giao_dich}</div>
+            <div class="transaction-movie">${gd.ten_phim_chinh}</div>
+            <div class="transaction-cinema">${gd.ten_rap_chinh}</div>
+            <div class="transaction-seats">${gd.so_ve} vé</div>
+            <div class="transaction-amount">${formatCurrency(gd.thanh_toan)}</div>
+            <div class="transaction-status ${gd.trang_thai}">${getStatusText(gd.trang_thai)}</div>
+            <div class="transaction-date">${formatDateTime(gd.ngay_tao)}</div>
+          </div>
+        `).join('');
       }
     </script>
   </body>
