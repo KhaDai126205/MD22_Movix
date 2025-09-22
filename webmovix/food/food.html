@@ -249,6 +249,36 @@
       .order-search button:hover {
         background: linear-gradient(90deg, #ff9e43 0%, #ff7043 100%);
       }
+      .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        gap: 10px;
+      }
+      .pagination button {
+        background: #2c2541;
+        color: #fff;
+        border: 1px solid #555;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+      }
+      .pagination button:hover:not(.active):not([disabled]) {
+        background: #555;
+        border-color: #777;
+      }
+      .pagination button:disabled {
+        color: #777;
+        cursor: not-allowed;
+      }
+      .pagination .page-info {
+        color: #ddd;
+        font-size: 0.9rem;
+        margin-left: 10px;
+      }
     </style>
   </head>
   <body>
@@ -455,6 +485,7 @@
         </thead>
         <tbody id="orderTable"></tbody>
       </table>
+      <div id="orderPagination" class="pagination"></div>
     </div>
 
     <script>
@@ -466,6 +497,8 @@
       const imageInput = document.getElementById('image');
       const previewImg = document.getElementById('previewImg');
       const searchInput = document.getElementById('orderSearch');
+      let orderPage = 1;
+      const ordersPerPage = 10;
 
       let foods = [];
       let customers = [];
@@ -614,14 +647,51 @@
           }
         });
 
-        orderTable.innerHTML = rows.length
-          ? rows.join('')
+        const totalPages = Math.max(1, Math.ceil(rows.length / ordersPerPage));
+        if (orderPage > totalPages) orderPage = totalPages;
+        const start = (orderPage - 1) * ordersPerPage;
+        const pageRows = rows.slice(start, start + ordersPerPage);
+
+        orderTable.innerHTML = pageRows.length
+          ? pageRows.join('')
           : `<tr><td colspan="5" style="color:#bbb;">Không có đơn phù hợp</td></tr>`;
+        renderOrderPagination(totalPages, rows.length, start);
       }
+
+      function renderOrderPagination(totalPages, totalRows, start) {
+        const pagination = document.getElementById('orderPagination');
+        if (!pagination) return;
+        let html = `
+          <button ${orderPage === 1 ? 'disabled' : ''} onclick="changeOrderPage(${orderPage - 1})"><i class="fas fa-chevron-left"></i></button>
+        `;
+        const startPage = Math.max(1, orderPage - 2);
+        const endPage = Math.min(totalPages, orderPage + 2);
+        if (startPage > 1) {
+          html += `<button onclick="changeOrderPage(1)">1</button>`;
+          if (startPage > 2) html += `<span class="page-info">...</span>`;
+        }
+        for (let i = startPage; i <= endPage; i++) {
+          html += `<button class="${i === orderPage ? 'active' : ''}" onclick="changeOrderPage(${i})">${i}</button>`;
+        }
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) html += `<span class="page-info">...</span>`;
+          html += `<button onclick="changeOrderPage(${totalPages})">${totalPages}</button>`;
+        }
+        html += `
+          <button ${orderPage === totalPages ? 'disabled' : ''} onclick="changeOrderPage(${orderPage + 1})"><i class="fas fa-chevron-right"></i></button>
+          <div class="page-info">Hiển thị ${totalRows === 0 ? 0 : (start + 1)}-${Math.min(start + ordersPerPage, totalRows)} của ${totalRows} đơn</div>
+        `;
+        pagination.innerHTML = html;
+      }
+
+      window.changeOrderPage = function(p) {
+        orderPage = p;
+        renderOrderTable();
+      };
 
       // Gõ realtime + nút reset
       if (searchInput && !searchInput.hasListener) {
-        searchInput.addEventListener('input', renderOrderTable);
+        searchInput.addEventListener('input', () => { orderPage = 1; renderOrderTable(); });
         searchInput.hasListener = true;
       }
 
@@ -629,7 +699,7 @@
       if (resetBtn && !resetBtn.hasListener) {
         resetBtn.addEventListener('click', () => {
           searchInput.value = '';
-          renderOrderTable();
+          orderPage = 1; renderOrderTable();
         });
         resetBtn.hasListener = true;
       }
@@ -644,12 +714,12 @@
 
         const filter = document.getElementById('orderFilter');
         if (filter && !filter.hasListener) {
-          filter.addEventListener('change', renderOrderTable);
+          filter.addEventListener('change', () => { orderPage = 1; renderOrderTable(); });
           filter.hasListener = true;
         }
 
         if (searchInput && !searchInput.hasListener) {
-          searchInput.addEventListener('input', renderOrderTable);
+          searchInput.addEventListener('input', () => { orderPage = 1; renderOrderTable(); });
           searchInput.hasListener = true;
         }
       }
