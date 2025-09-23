@@ -767,26 +767,75 @@ function getMovieRevenueStats() {
   const {movies, tickets, payments, cinemas} = dashboardData;
   if (!movies || movies.length === 0) return [];
 
+  // Xác định danh sách vé đã thanh toán hoàn tất
+  const paidPaymentList = (payments || []).filter(p => isPaymentCompleted(p));
+  const paidVeIdSet = new Set(paidPaymentList.map(p => String(p.ve_id)));
+
+  // Chuẩn hóa text chung
+  const normalizeStr = (s) => String(s || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Chuẩn hóa giờ chiếu dạng khoảng thời gian
+  const normalizeTimeRange = (s) => {
+    const raw = String(s || '').toLowerCase();
+    // thay thế mọi loại dash thành '-'
+    const dashUnified = raw.replace(/[–—−]/g, '-');
+    // bỏ khoảng trắng thừa quanh dấu gạch
+    const noSpaces = dashUnified.replace(/\s*-\s*/g, '-').replace(/\s+/g, ' ');
+    // chuẩn hóa ký hiệu giờ: 12h15p -> 12h15, 12:00 -> 12h, giữ nguyên nếu đã là 12h-14h
+    const norm = noSpaces
+      .replace(/\s/g, '')
+      .replace(/:/g, 'h')
+      .replace(/ph|p$/g, '')
+      .replace(/(\d{1,2})$/g, '$1h') // nếu kết thúc bằng số đơn lẻ coi như giờ
+      .replace(/h(?=\d{1,2}h)/g, 'h');
+    return norm;
+  };
+
+  // Tạo hàm sinh khóa suất chiếu ổn định khi thiếu suat_chieu_id
+  const buildShowtimeKey = (t) => {
+    const id = t?.suat_chieu_id;
+    if (id !== undefined && id !== null && String(id).trim() !== '') {
+      return `ID:${String(id)}`;
+    }
+    const day = (t?.ngay_chieu || '').trim();
+    const time = normalizeTimeRange(t?.gio_chieu || '');
+    const rapKey = (t?.rap_id !== undefined && t?.rap_id !== null && String(t.rap_id).trim() !== '')
+      ? `RID:${String(t.rap_id).trim()}`
+      : (t?.dia_chi_rap ? `ADR:${normalizeStr(t.dia_chi_rap)}` : (t?.ten_rap ? `TRP:${normalizeStr(t.ten_rap)}` : ''));
+    const key = [day, time, rapKey].filter(Boolean).join('|');
+    return key || `VE:${String(t?.ve_id ?? '')}`; // fallback cuối cùng theo ve_id để tránh gom sai về 1
+  };
+
+  // Chuẩn hóa tên phim để so khớp tin cậy hơn
+  const normalizeTitle = (s) => normalizeStr(s);
+
   let totalRevenue = 0;
 
   const stats = movies.map(movie => {
-    // Lọc vé khớp với phim
-    const movieTickets = tickets.filter(
-      t =>
-        t.ten_phim?.trim().toLowerCase() ===
-        movie.ten_phim?.trim().toLowerCase(),
-    );
+    const movieId = movie.id ?? movie.phim_id;
+    const movieNameNorm = normalizeTitle(movie.ten_phim);
+
+    // Lọc vé khớp với phim VÀ đã có thanh toán hoàn tất
+    const movieTickets = (tickets || []).filter(t => {
+      if (!paidVeIdSet.has(String(t.ve_id))) return false;
+      const idMatch = (t.phim_id !== undefined && t.phim_id !== null) && String(t.phim_id) === String(movieId);
+      const nameMatch = normalizeTitle(t.ten_phim) === movieNameNorm;
+      return idMatch || nameMatch;
+    });
 
     // Lọc thanh toán khớp với vé (chỉ thanh toán thành công)
-    const moviePayments = payments.filter(
-      p =>
-        movieTickets.some(t => t.ve_id === p.ve_id) &&
-        (p.trang_thai === 'Đã thanh toán' || !p.trang_thai),
+    const moviePayments = paidPaymentList.filter(p =>
+      movieTickets.some(t => String(t.ve_id) === String(p.ve_id)),
     );
 
-    // Tính số suất chiếu duy nhất
-    const uniqueShowtimes = new Set(movieTickets.map(t => t.suat_chieu_id));
-    const shows = uniqueShowtimes.size;
+    // Tính số suất chiếu duy nhất từ các vé đã thanh toán (dựa vào suat_chieu_id hoặc composite key)
+    const uniqueShowtimeKeys = new Set(movieTickets.map(buildShowtimeKey));
+    const shows = uniqueShowtimeKeys.size;
 
     const ticketsCount = movieTickets.length;
     const revenue = moviePayments.reduce(
@@ -794,18 +843,15 @@ function getMovieRevenueStats() {
       0,
     );
 
-    // Tính toán chi tiết hơn về ghế
+    // Tính toán chi tiết hơn về ghế dựa trên vé đã thanh toán
     let totalCapacity = 0;
-    uniqueShowtimes.forEach(showtimeId => {
-      // Tìm rạp cho suất chiếu này
-      const ticketForShowtime = movieTickets.find(
-        t => t.suat_chieu_id === showtimeId,
-      );
+    uniqueShowtimeKeys.forEach(key => {
+      const ticketForShowtime = movieTickets.find(t => buildShowtimeKey(t) === key);
       if (ticketForShowtime) {
-        const cinema = cinemas.find(
-          c =>
-            c.id === ticketForShowtime.rap_id ||
-            c.ten_rap === ticketForShowtime.dia_chi_rap,
+        const cinema = cinemas?.find(
+          c => String(c.id) === String(ticketForShowtime.rap_id) ||
+               normalizeStr(c.ten_rap) === normalizeStr(ticketForShowtime.ten_rap) ||
+               normalizeStr(c.dia_chi) === normalizeStr(ticketForShowtime.dia_chi_rap),
         );
         const seatsInCinema = cinema?.so_ghe || 30; // Default 30 nếu không có thông tin
         totalCapacity += seatsInCinema;
@@ -839,8 +885,7 @@ function getMovieRevenueStats() {
 
   // Tính tỷ trọng %
   stats.forEach(s => {
-    s.share =
-      totalRevenue > 0 ? ((s.revenue / totalRevenue) * 100).toFixed(2) : '0.00';
+    s.share = totalRevenue > 0 ? ((s.revenue / totalRevenue) * 100).toFixed(2) : '0.00';
   });
 
   // Trả về danh sách phim có dữ liệu, sắp xếp theo doanh thu
@@ -963,30 +1008,66 @@ function getShowtimeRevenueStats() {
   const {tickets, payments, cinemas, movies} = dashboardData;
   const showtimeStats = {};
 
+  // Hàm sinh khóa suất chiếu ổn định để nhóm đúng từng suất
+  const normalizeStr = (s) => String(s || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const normalizeTimeRange = (s) => {
+    const raw = String(s || '').toLowerCase();
+    const dashUnified = raw.replace(/[–—−]/g, '-');
+    const noSpaces = dashUnified.replace(/\s*-\s*/g, '-').replace(/\s+/g, ' ');
+    const norm = noSpaces
+      .replace(/\s/g, '')
+      .replace(/:/g, 'h')
+      .replace(/ph|p$/g, '')
+      .replace(/(\d{1,2})$/g, '$1h');
+    return norm;
+  };
+
+  const buildShowtimeKey = (t) => {
+    const id = t?.suat_chieu_id;
+    if (id !== undefined && id !== null && String(id).trim() !== '') {
+      return `ID:${String(id)}`;
+    }
+    const day = (t?.ngay_chieu || '').trim();
+    const time = normalizeTimeRange(t?.gio_chieu || '');
+    const rapKey = (t?.rap_id !== undefined && t?.rap_id !== null && String(t.rap_id).trim() !== '')
+      ? `RID:${String(t.rap_id).trim()}`
+      : (t?.dia_chi_rap ? `ADR:${normalizeStr(t.dia_chi_rap)}` : (t?.ten_rap ? `TRP:${normalizeStr(t.ten_rap)}` : ''));
+    const key = [day, time, rapKey].filter(Boolean).join('|');
+    return key || `VE:${String(t?.ve_id ?? '')}`;
+  };
+
   // Duyệt theo payment đã hoàn tất để chắc chắn chỉ lấy suất có thanh toán
   payments.forEach(p => {
     if (!isPaymentCompleted(p)) return;
     const ticket = tickets.find(t => String(t.ve_id) === String(p.ve_id));
     if (!ticket) return; // không có vé tương ứng thì bỏ qua
 
-    const showtimeId = ticket.suat_chieu_id;
+    const key = buildShowtimeKey(ticket);
     const cinema = cinemas.find(
-      c => c.id === ticket.rap_id || c.ten_rap === ticket.dia_chi_rap || c.dia_chi === ticket.dia_chi_rap,
+      c => String(c.id) === String(ticket.rap_id) ||
+           normalizeStr(c.ten_rap) === normalizeStr(ticket.ten_rap) ||
+           normalizeStr(c.dia_chi) === normalizeStr(ticket.dia_chi_rap),
     );
     const movie = movies.find(m => m.id === ticket.phim_id || m.ten_phim === ticket.ten_phim);
 
     const totalSeats = cinema?.so_ghe || 30;
 
-    if (!showtimeStats[showtimeId]) {
-      showtimeStats[showtimeId] = {
-        suat_chieu_id: showtimeId,
+    if (!showtimeStats[key]) {
+      showtimeStats[key] = {
+        suat_chieu_id: ticket.suat_chieu_id,
         phim_id: ticket.phim_id,
         ten_phim: movie?.ten_phim || ticket.ten_phim || 'Không rõ',
         the_loai: movie?.the_loai || 'Khác',
         ngay_chieu: ticket.ngay_chieu,
         gio_chieu: ticket.gio_chieu,
         rap_id: ticket.rap_id,
-        rap_ten: cinema?.ten_rap || 'Không rõ',
+        rap_ten: cinema?.ten_rap || ticket.ten_rap || 'Không rõ',
         dia_chi_rap: cinema?.dia_chi || ticket.dia_chi_rap || 'Không rõ',
         so_ve: 0,
         doanh_thu: 0,
@@ -994,8 +1075,8 @@ function getShowtimeRevenueStats() {
       };
     }
 
-    showtimeStats[showtimeId].so_ve += 1;
-    showtimeStats[showtimeId].doanh_thu += Number.parseFloat(p.so_tien) || 0;
+    showtimeStats[key].so_ve += 1;
+    showtimeStats[key].doanh_thu += Number.parseFloat(p.so_tien) || 0;
   });
 
   // Tính các chỉ số bổ sung
@@ -1051,9 +1132,15 @@ function renderShowtimeRevenueTable() {
     data = data.filter(s => s.ngay_chieu === dateFilter);
   }
 
+  // Phân trang
+  const totalPages = Math.max(1, Math.ceil(data.length / showtimePerPage));
+  if (showtimePage > totalPages) showtimePage = totalPages;
+  const start = (showtimePage - 1) * showtimePerPage;
+  const pageItems = data.slice(start, start + showtimePerPage);
+
   tbody.innerHTML = '';
 
-  if (data.length === 0) {
+  if (pageItems.length === 0) {
     tbody.innerHTML = `
       <tr><td colspan="12" style="text-align:center; padding:15px; color:#777;">
         Không có dữ liệu phù hợp
@@ -1062,10 +1149,10 @@ function renderShowtimeRevenueTable() {
   }
 
   // Render dữ liệu từng suất chiếu
-  data.forEach((s, index) => {
+  pageItems.forEach((s, index) => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${index + 1}</td>
+      <td>${start + index + 1}</td>
       <td><strong>${s.ten_phim}</strong></td>
       <td><span class="genre-tag">${s.the_loai}</span></td>
       <td>${s.ngay_chieu}</td>
@@ -1089,38 +1176,46 @@ function renderShowtimeRevenueTable() {
     tbody.appendChild(row);
   });
 
-  // Tính tổng cộng
-  const totalShows = data.length;
-  const totalTickets = data.reduce((sum, s) => sum + s.so_ve, 0);
-  const totalSeats = data.reduce((sum, s) => sum + s.tong_ghe, 0);
-  const totalRevenue = data.reduce((sum, s) => sum + s.doanh_thu, 0);
-  const avgTicketPrice = totalTickets > 0 ? totalRevenue / totalTickets : 0;
-  const overallFillRate =
-    totalSeats > 0
-      ? ((totalTickets / totalSeats) * 100).toFixed(2) + '%'
-      : 'N/A';
-
-  // Render dòng tổng cộng
-  const totalRow = document.createElement('tr');
-  totalRow.style.fontWeight = 'bold';
-  totalRow.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-  totalRow.innerHTML = `
-    <td colspan="7" style="text-align:center; color:#ffffff">📊 TỔNG CỘNG (${totalShows} suất chiếu)</td>
-    <td style="color:#ffffff">${totalTickets}</td>
-    <td style="color:#ffffff">${totalSeats}</td>
-    <td style="color:#ffffff"><strong class="revenue-text">${formatCurrency(
-      totalRevenue,
-    )}</strong></td>
-    <td style="color:#ffffff">${formatCurrency(avgTicketPrice)}</td>
-    <td style="color:#ffffff"><strong>${overallFillRate}</strong></td>
+  // Render phân trang
+  let html = `
+    <button ${showtimePage === 1 ? 'disabled' : ''} onclick="changeShowtimePage(${showtimePage - 1})"><i class="fas fa-chevron-left"></i></button>
   `;
-  tbody.appendChild(totalRow);
+  const startPage = Math.max(1, showtimePage - 2);
+  const endPage = Math.min(totalPages, showtimePage + 2);
+  if (startPage > 1) {
+    html += `<button onclick="changeShowtimePage(1)">1</button>`;
+    if (startPage > 2) html += `<span class="page-info">...</span>`;
+  }
+  for (let i = startPage; i <= endPage; i++) {
+    html += `<button class="${i === showtimePage ? 'active' : ''}" onclick="changeShowtimePage(${i})">${i}</button>`;
+  }
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) html += `<span class="page-info">...</span>`;
+    html += `<button onclick="changeShowtimePage(${totalPages})">${totalPages}</button>`;
+  }
+  html += `
+    <button ${showtimePage === totalPages ? 'disabled' : ''} onclick="changeShowtimePage(${showtimePage + 1})"><i class="fas fa-chevron-right"></i></button>
+    <div class="page-info">Hiển thị ${data.length === 0 ? 0 : (start + 1)}-${Math.min(start + showtimePerPage, data.length)} của ${data.length} suất chiếu</div>
+  `;
+  const paginationContainer = document.getElementById('showtimePagination');
+  if (paginationContainer) {
+    paginationContainer.innerHTML = html;
+  }
 }
 
 // Hàm chính cập nhật section doanh thu suất chiếu
 function updateShowtimeRevenueSection() {
   renderShowtimeRevenueTable();
   populateDateFilter(); // Populate date filter với dữ liệu thực
+}
+
+// Phân trang suất chiếu
+let showtimePage = 1;
+const showtimePerPage = 10;
+
+function changeShowtimePage(p) {
+  showtimePage = p;
+  renderShowtimeRevenueTable();
 }
 
 // Populate date filter với các ngày có suất chiếu
@@ -1174,13 +1269,13 @@ function setupShowtimeRevenueFilters() {
   const showtimeDate = document.querySelector('#showtimeDateFilter');
 
   if (showtimeSearch) {
-    showtimeSearch.addEventListener('input', renderShowtimeRevenueTable);
+    showtimeSearch.addEventListener('input', () => { showtimePage = 1; renderShowtimeRevenueTable(); });
   }
   if (showtimeGenre) {
-    showtimeGenre.addEventListener('change', renderShowtimeRevenueTable);
+    showtimeGenre.addEventListener('change', () => { showtimePage = 1; renderShowtimeRevenueTable(); });
   }
   if (showtimeDate) {
-    showtimeDate.addEventListener('change', renderShowtimeRevenueTable);
+    showtimeDate.addEventListener('change', () => { showtimePage = 1; renderShowtimeRevenueTable(); });
   }
 }
 

@@ -1170,6 +1170,12 @@
         </div>
 
         <div class="table-container">
+          <div class="table-filters" style="display:flex;gap:10px;align-items:center;padding:12px;background:#222;border-bottom:1px solid #444">
+            <input id="filterMovie" type="text" placeholder="Tìm tên phim..." style="flex:1;padding:10px;border:1px solid #444;border-radius:8px;background:#1a1a1a;color:#fff;" />
+            <input id="filterRoom" type="text" placeholder="Tìm phòng..." style="flex:1;padding:10px;border:1px solid #444;border-radius:8px;background:#1a1a1a;color:#fff;" />
+            <input id="filterDate" type="date" style="padding:10px;border:1px solid #444;border-radius:8px;background:#1a1a1a;color:#fff;" />
+            <button class="btn btn-secondary" id="clearFiltersBtn"><i class="fas fa-eraser"></i> Xóa lọc</button>
+          </div>
           <table>
             <thead>
               <tr>
@@ -1183,10 +1189,10 @@
               </tr>
             </thead>
             <tbody id="showtimeTable"></tbody>
-          </table>
 
-          <!-- Phân trang cho bảng suất chiếu -->
-          <div id="showtimePagination" class="pagination"></div>
+            <!-- Phân trang cho bảng suất chiếu -->
+            <div id="showtimePagination" class="pagination"></div>
+          </table>
         </div>
       </div>
     </div>
@@ -1246,6 +1252,7 @@
       // Phân trang cho suất chiếu
       let currentShowtimePage = 1;
       const showtimesPerPage = 10;
+      let filteredShowtimes = [];
 
       // Initialize
       document.addEventListener('DOMContentLoaded', function () {
@@ -1317,24 +1324,43 @@
           startTimeInput.addEventListener('change', validateTimeInputs);
           endTimeInput.addEventListener('change', validateTimeInputs);
         }
+
+        // Filters for showtime table
+        const filterMovie = document.getElementById('filterMovie');
+        const filterRoom = document.getElementById('filterRoom');
+        const filterDate = document.getElementById('filterDate');
+        const clearBtn = document.getElementById('clearFiltersBtn');
+        if (filterMovie) filterMovie.addEventListener('input', () => {currentShowtimePage = 1; renderShowtimeTable();});
+        if (filterRoom) filterRoom.addEventListener('input', () => {currentShowtimePage = 1; renderShowtimeTable();});
+        if (filterDate) filterDate.addEventListener('change', () => {currentShowtimePage = 1; renderShowtimeTable();});
+        if (clearBtn)
+          clearBtn.addEventListener('click', () => {
+            if (filterMovie) filterMovie.value = '';
+            if (filterRoom) filterRoom.value = '';
+            if (filterDate) filterDate.value = '';
+            currentShowtimePage = 1;
+            renderShowtimeTable();
+          });
       }
 
       // Validation real-time cho input thời gian
       function validateTimeInputs() {
-        const startTime = document.getElementById('showtimeStart').value;
-        const endTime = document.getElementById('showtimeEnd').value;
+        const startTime = document.getElementById('showtimeStart').value; // HH:mm
+        const endTime = document.getElementById('showtimeEnd').value; // HH:mm
 
         if (startTime && endTime) {
-          const startHour = parseInt(startTime.split(':')[0]);
-          const endHour = parseInt(endTime.split(':')[0]);
+          const [sh, sm] = startTime.split(':').map(Number);
+          const [eh, em] = endTime.split(':').map(Number);
+          const startTotal = sh * 60 + sm;
+          const endTotal = eh * 60 + em;
 
-          if (startHour >= endHour) {
+          if (startTotal >= endTotal) {
             showAlert('⚠️ Giờ bắt đầu phải nhỏ hơn giờ kết thúc!', 'error');
             document.getElementById('showtimeEnd').focus();
             return false;
           }
 
-          if (startHour < 6 || startHour > 23 || endHour < 7 || endHour > 24) {
+          if (sh < 6 || sh > 23 || eh < 7 || eh > 24) {
             showAlert(
               '⚠️ Thời gian chiếu phải trong khoảng 6:00 - 24:00!',
               'error',
@@ -1466,6 +1492,11 @@
         document.getElementById('totalMovies').textContent =
           uniqueMovies.length;
 
+        const displayHm = (val) => {
+          const s = String(val || '');
+          return s.includes(':') ? s : `${s.padStart(2, '0')}:00`;
+        };
+
         // Render cinema overview cards
         const overviewContainer = document.getElementById('cinemaOverview');
         overviewContainer.innerHTML = cinemas
@@ -1512,13 +1543,11 @@
                                                             ? movie.ten_phim
                                                             : 'Phim không xác định'
                                                         }<br>
-                                                        ${
-                                                          showtime.ngay_chieu
-                                                        } | ${
-                                                  showtime.thoi_gian_bat_dau
-                                                }:00-${
-                                                  showtime.thoi_gian_ket_thuc
-                                                }:00
+                                                        ${showtime.ngay_chieu} | ${displayHm(
+                                                  showtime.thoi_gian_bat_dau,
+                                                )} - ${displayHm(
+                                                  showtime.thoi_gian_ket_thuc,
+                                                )}
                                                     </span>
                                                 `;
                                               })
@@ -1617,9 +1646,47 @@
       // Render showtime table với phân trang
       function renderShowtimeTable() {
         const tbody = document.getElementById('showtimeTable');
+        // Filtering
+        const norm = s => String(s || '')
+          .normalize('NFKD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .trim();
+        const fMovie = norm(document.getElementById('filterMovie')?.value || '');
+        const fRoom = norm(document.getElementById('filterRoom')?.value || '');
+        const fDateRaw = document.getElementById('filterDate')?.value || '';
+        const fDate = fDateRaw
+          ? (() => {
+              const d = new Date(fDateRaw);
+              const dd = d.getDate().toString().padStart(2, '0');
+              const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+              const yy = d.getFullYear();
+              return `${dd}/${mm}/${yy}`;
+            })()
+          : '';
+
+        filteredShowtimes = (showtimes || []).filter(s => {
+          let ok = true;
+          if (fMovie) {
+            const mv = movies.find(m => String(m.phim_id) === String(s.phim_id));
+            ok = ok && norm(mv?.ten_phim).includes(fMovie);
+          }
+          if (fRoom) {
+            const rm = rooms.find(r => String(r.room_id) === String(s.room_id));
+            ok = ok && norm(rm?.ten_phong).includes(fRoom);
+          }
+          if (fDate) ok = ok && s.ngay_chieu === fDate;
+          return ok;
+        });
+
         const startIndex = (currentShowtimePage - 1) * showtimesPerPage;
         const endIndex = startIndex + showtimesPerPage;
-        const paginatedShowtimes = showtimes.slice(startIndex, endIndex);
+        const paginatedShowtimes = filteredShowtimes.slice(startIndex, endIndex);
+
+        const displayHm = (val) => {
+          const s = String(val || '');
+          return s.includes(':') ? s : `${s.padStart(2, '0')}:00`;
+        };
 
         tbody.innerHTML = paginatedShowtimes
           .map((showtime, index) => {
@@ -1641,9 +1708,9 @@
                           cinema ? cinema.ten_rap : 'Rạp không tồn tại'
                         }</td>
                         <td>${showtime.ngay_chieu}</td>
-                        <td><span class="showtime">${
-                          showtime.thoi_gian_bat_dau
-                        }:00 - ${showtime.thoi_gian_ket_thuc}:00</span></td>
+                        <td><span class="showtime">${displayHm(
+                          showtime.thoi_gian_bat_dau,
+                        )} - ${displayHm(showtime.thoi_gian_ket_thuc)}</span></td>
                         <td>
                             <div class="btn-group">
                                 <button class="btn btn-warning" onclick="editShowtime('${
@@ -1671,7 +1738,8 @@
       function renderShowtimePagination() {
         const paginationContainer =
           document.getElementById('showtimePagination');
-        const totalPages = Math.ceil(showtimes.length / showtimesPerPage);
+        const total = (filteredShowtimes && filteredShowtimes.length) || 0;
+        const totalPages = Math.ceil(total / showtimesPerPage) || 1;
 
         if (totalPages <= 1) {
           paginationContainer.innerHTML = '';
@@ -1732,15 +1800,12 @@
         `;
 
         // Thông tin trang hiện tại
-        const startItem = (currentShowtimePage - 1) * showtimesPerPage + 1;
-        const endItem = Math.min(
-          currentShowtimePage * showtimesPerPage,
-          showtimes.length,
-        );
+        const startItem = total === 0 ? 0 : (currentShowtimePage - 1) * showtimesPerPage + 1;
+        const endItem = Math.min(currentShowtimePage * showtimesPerPage, total);
 
         paginationHTML += `
           <div class="page-info">
-            Hiển thị ${startItem}-${endItem} của ${showtimes.length} suất chiếu
+            Hiển thị ${startItem}-${endItem} của ${total} suất chiếu
           </div>
         `;
 
@@ -2003,12 +2068,8 @@
         const showtimeData = {
           room_id: document.getElementById('showtimeRoom').value,
           phim_id: document.getElementById('showtimeMovie').value,
-          thoi_gian_bat_dau: document
-            .getElementById('showtimeStart')
-            .value.split(':')[0],
-          thoi_gian_ket_thuc: document
-            .getElementById('showtimeEnd')
-            .value.split(':')[0],
+          thoi_gian_bat_dau: document.getElementById('showtimeStart').value, // HH:mm
+          thoi_gian_ket_thuc: document.getElementById('showtimeEnd').value,  // HH:mm
           ngay_chieu: formattedDate,
         };
         const showtimeId = document.getElementById('showtimeId').value;
@@ -2049,18 +2110,41 @@
       // Validation function: Kiểm tra xung đột thời gian suất chiếu
       function validateShowtimeTime(newShowtime, editingShowtimeId = null) {
         const CLEANUP_TIME = 15; // 15 phút giãn cách
+        const MIN_DURATION_MIN = 60; // Tối thiểu 60 phút/1 suất
 
-        const startTime = parseInt(newShowtime.thoi_gian_bat_dau);
-        const endTime = parseInt(newShowtime.thoi_gian_ket_thuc);
+        const parseToMinutes = (val) => {
+          if (val == null) return 0;
+          const str = String(val);
+          if (str.includes(':')) {
+            const [h, m] = str.split(':').map(Number);
+            return h * 60 + (m || 0);
+          }
+          return parseInt(str, 10) * 60;
+        };
+
+        const startTotal = parseToMinutes(newShowtime.thoi_gian_bat_dau);
+        const endTotal = parseToMinutes(newShowtime.thoi_gian_ket_thuc);
 
         // Kiểm tra thời gian hợp lệ
-        if (startTime >= endTime) {
+        if (startTotal >= endTotal) {
           showAlert('❌ Giờ bắt đầu phải nhỏ hơn giờ kết thúc!', 'error');
           return false;
         }
 
+        // Độ dài tối thiểu của một suất chiếu
+        const durationMinutes = endTotal - startTotal;
+        if (durationMinutes < MIN_DURATION_MIN) {
+          showAlert(
+            `❌ Thời lượng suất chiếu tối thiểu là ${MIN_DURATION_MIN} phút!`,
+            'error',
+          );
+          return false;
+        }
+
         // Kiểm tra thời gian trong khoảng hợp lệ (6:00 - 24:00)
-        if (startTime < 6 || startTime > 23 || endTime < 7 || endTime > 24) {
+        const sh = Math.floor(startTotal / 60);
+        const eh = Math.floor(endTotal / 60);
+        if (sh < 6 || sh > 23 || eh < 7 || eh > 24) {
           showAlert(
             '❌ Thời gian chiếu phải trong khoảng 6:00 - 24:00!',
             'error',
@@ -2069,59 +2153,65 @@
         }
 
         // Tìm các suất chiếu hiện có trong cùng phòng và ngày
-        const existingShowtimes = showtimes.filter(showtime => {
-          // Bỏ qua suất chiếu đang được chỉnh sửa
+        const existingShowtimesSameRoom = showtimes.filter(showtime => {
           if (
             editingShowtimeId &&
             showtime.suat_chieu_id.toString() === editingShowtimeId.toString()
           ) {
             return false;
           }
-
           return (
             showtime.room_id.toString() === newShowtime.room_id.toString() &&
             showtime.ngay_chieu === newShowtime.ngay_chieu
           );
         });
 
-        // Kiểm tra xung đột/giãn cách
-        for (const existing of existingShowtimes) {
-          const existingStart = parseInt(existing.thoi_gian_bat_dau);
-          const existingEnd = parseInt(existing.thoi_gian_ket_thuc);
+        // Kiểm tra xung đột/giãn cách trong CÙNG PHÒNG
+        for (const existing of existingShowtimesSameRoom) {
+          const existingStart = parseToMinutes(existing.thoi_gian_bat_dau);
+          const existingEnd = parseToMinutes(existing.thoi_gian_ket_thuc);
 
-          // 1) Trùng giờ (overlap thật sự)
-          if (startTime < existingEnd && endTime > existingStart) {
+          if (startTotal < existingEnd && endTotal > existingStart) {
             showAlert(
-              `❌ Suất chiếu trùng giờ!\n\n` +
-                `Suất hiện tại: ${existingStart}:00 - ${existingEnd}:00\n` +
-                `Thời gian bạn chọn: ${startTime}:00 - ${endTime}:00\n\n` +
+              `❌ Suất chiếu trùng giờ trong cùng phòng!\n\n` +
+                `Suất hiện tại: ${formatHm(existingStart)} - ${formatHm(existingEnd)}\n` +
+                `Thời gian bạn chọn: ${formatHm(startTotal)} - ${formatHm(endTotal)}\n\n` +
                 `Vui lòng chọn thời gian khác!`,
               'error',
             );
             return false;
           }
 
-          // 2) Không trùng nhưng thiếu giãn cách CLEANUP_TIME phút
           let gapMinutes = 9999;
-          if (endTime <= existingStart) {
-            gapMinutes = (existingStart - endTime) * 60; // new trước, cũ sau
-          } else if (existingEnd <= startTime) {
-            gapMinutes = (startTime - existingEnd) * 60; // cũ trước, new sau
+          if (endTotal <= existingStart) {
+            gapMinutes = existingStart - endTotal;
+          } else if (existingEnd <= startTotal) {
+            gapMinutes = startTotal - existingEnd;
           }
-
           if (gapMinutes < CLEANUP_TIME) {
             showAlert(
-              `⚠️ Cần ${CLEANUP_TIME} phút giãn cách!\n\n` +
-                `Suất hiện tại: ${existingStart}:00 - ${existingEnd}:00\n` +
-                `Thời gian bạn chọn: ${startTime}:00 - ${endTime}:00\n\n` +
-                `Vui lòng chọn thời gian khác!`,
+              `⚠️ Cần tối thiểu ${CLEANUP_TIME} phút giãn cách giữa các suất trong cùng phòng!\n\n` +
+                `Suất hiện tại: ${formatHm(existingStart)} - ${formatHm(existingEnd)}\n` +
+                `Thời gian bạn chọn: ${formatHm(startTotal)} - ${formatHm(endTotal)}`,
               'error',
             );
             return false;
           }
         }
 
+        // LƯU Ý NGHIỆP VỤ: Cho phép các phòng khác trong cùng rạp chiếu cùng giờ cho cùng 1 phim.
+        // Vì vậy KHÔNG kiểm tra overlap/giãn cách giữa phòng khác. Nếu muốn bật lại, khối kiểm tra dưới đây có thể được khôi phục.
+        // (Đã loại bỏ kiểm tra same-cinema/same-movie khác phòng)
+
         return true;
+      }
+
+      function formatHm(totalMinutes) {
+        const h = Math.floor(totalMinutes / 60)
+          .toString()
+          .padStart(2, '0');
+        const m = (totalMinutes % 60).toString().padStart(2, '0');
+        return `${h}:${m}`;
       }
 
       // Giữ lại helper nếu cần mở rộng sau (không dùng ở kiểm tra chính hiện tại)
@@ -2189,10 +2279,14 @@
           // Format giờ đúng cách cho input time
           document.getElementById(
             'showtimeStart',
-          ).value = `${showtime.thoi_gian_bat_dau.padStart(2, '0')}:00`;
+          ).value = String(showtime.thoi_gian_bat_dau).includes(':')
+            ? showtime.thoi_gian_bat_dau
+            : `${String(showtime.thoi_gian_bat_dau).padStart(2, '0')}:00`;
           document.getElementById(
             'showtimeEnd',
-          ).value = `${showtime.thoi_gian_ket_thuc.padStart(2, '0')}:00`;
+          ).value = String(showtime.thoi_gian_ket_thuc).includes(':')
+            ? showtime.thoi_gian_ket_thuc
+            : `${String(showtime.thoi_gian_ket_thuc).padStart(2, '0')}:00`;
 
           // Chuyển sang tab suất chiếu
           showTab('showtimes');
